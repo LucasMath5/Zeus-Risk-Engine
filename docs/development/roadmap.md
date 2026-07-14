@@ -20,7 +20,7 @@
 | 1 | fundação do repositório | Fase 0 | pacote instalável, CLI mínima, metadados, qualidade e testes básicos | concluída |
 | 2 | domínio de carteira | Fase 1 | instrumentos, posições, carteira, validações, valor e pesos testados | concluída |
 | 3 | importação CSV | Fase 2 | normalização, parsing, problemas por linha e fixture de exemplo | concluída |
-| 4 | importação XLSX | Fase 3 | seleção de planilha e mapeamento integrados à mesma validação | planejada |
+| 4 | importação XLSX | Fase 3 | seleção de planilha e mapeamento integrados à mesma validação | concluída |
 | 5 | dados de mercado locais | Fases 2–3 | port, provider CSV, séries, metadados, alinhamento e cache testados | planejada |
 | 6 | analytics básicos | Fases 2 e 5 | retornos, volatilidade, correlação, drawdown e concentração documentados | planejada |
 | 7 | VaR histórico | Fase 6 | configuração, convenção, quantil, resultado e testes numéricos | planejada |
@@ -361,13 +361,13 @@ docs/models/csv-portfolio-format.md
 feat(import): add validated CSV portfolio importer
 ```
 
-## Próxima etapa recomendada — Fase 4
+## Fase 4 — Importação XLSX concluída
 
 ### Objetivo
 
-Importar carteiras XLSX reutilizando os contratos de coluna, linha, validação e resultado
-da Fase 3, com seleção explícita de planilha e sem executar conteúdo da pasta de
-trabalho.
+Foi implementada a importação de carteiras XLSX reutilizando os contratos de coluna,
+linha, validação e resultado da Fase 3, com seleção explícita de worksheet e sem
+executar fórmulas ou conteúdo da pasta de trabalho.
 
 ### Funcionalidades incluídas
 
@@ -387,37 +387,42 @@ trabalho.
 - interface PySide6, drag-and-drop ou processamento assíncrono;
 - planilhas de mercado ou relatórios como entrada de posições.
 
-### Arquivos inicialmente previstos
+### Arquivos entregues
 
 ```text
 src/zeus_risk/importers/tabular.py
 src/zeus_risk/importers/xlsx_portfolio.py
 tests/unit/importers/test_xlsx_portfolio.py
 tests/integration/test_xlsx_portfolio_import.py
-tests/fixtures/portfolios/valid_portfolio.xlsx
 docs/models/xlsx-portfolio-format.md
+pyproject.toml
 ```
 
-### Decisões a fechar na Fase 4
+### Decisões fechadas na Fase 4
 
-- biblioteca XLSX e faixa de versões suportada;
-- comportamento quando existem várias planilhas;
-- uso de valor calculado ou rejeição de células com fórmula;
-- conversão de datas e números fornecidos pelo workbook;
-- limite inicial de linhas/colunas para uso síncrono;
-- extração de lógica tabular compartilhada sem acoplar o domínio ao formato.
+- `openpyxl>=3.1.5,<4` lê OOXML e `defusedxml>=0.7.1,<1` endurece o parsing XML;
+- uma única worksheet é automática; duas ou mais exigem nome explícito;
+- fórmulas são carregadas como fórmulas e rejeitadas, mesmo que exista valor em cache;
+- texto, inteiro e ponto flutuante são aceitos; datas, booleanos e erros são rejeitados;
+- os limites padrão são 25 MiB comprimidos, 100 MiB descomprimidos, 25.000 linhas e
+  100 colunas;
+- aliases e validação de domínio foram extraídos para `tabular.py` e reutilizados sem
+  acoplar `domain` ao formato;
+- workbooks sintéticos são gerados nos testes, evitando fixtures binárias opacas.
 
-### Critérios de saída previstos
+### Evidências de conclusão
 
 - CSV e XLSX produzem contratos equivalentes de revisão;
 - seleção inválida de planilha gera erro específico;
 - fórmulas e macros não são executadas;
 - tipos de célula não sofrem coerção silenciosa;
-- arquivos de teste são sintéticos e pequenos;
-- dependência nova é documentada e limitada ao adapter XLSX;
-- Ruff, mypy, testes, cobertura e build permanecem aprovados.
+- arquivos de teste são sintéticos, pequenos e criados em diretórios temporários;
+- dependências novas estão documentadas e limitadas à leitura segura de XLSX;
+- CSV e XLSX reconciliam posições, valores e resumo em teste de integração;
+- Ruff e mypy aprovados, 117 testes aprovados e cobertura total de 97%;
+- wheel e source distribution construídos, seguidos de instalação e smoke test XLSX.
 
-### Testes previstos
+### Testes entregues
 
 - workbook válido com uma e várias planilhas;
 - planilha selecionada por nome, ausente e vazia;
@@ -430,6 +435,77 @@ docs/models/xlsx-portfolio-format.md
 
 ```text
 feat(import): add XLSX portfolio importer
+```
+
+## Próxima etapa recomendada — Fase 5
+
+### Objetivo
+
+Modelar séries de preços e metadados de mercado, definir um port pequeno de provider e
+entregar uma implementação local por CSV com alinhamento, política explícita de valores
+ausentes e cache reproduzível.
+
+### Funcionalidades inicialmente previstas
+
+- `PriceObservation`, `PriceSeries` e `MarketDataMetadata` imutáveis;
+- frequência diária e datas estritamente ordenadas;
+- `MarketDataProvider` como `Protocol` orientado ao caso de uso;
+- provider CSV local sem rede;
+- leitura de uma ou várias séries em contrato documentado;
+- detecção de datas, preços e duplicidades inválidas;
+- alinhamento por interseção ou união segundo política explícita;
+- cache local identificável sem ocultar a fonte original;
+- fixtures sintéticas e testes numéricos simples.
+
+### Fora da Fase 5
+
+- APIs externas, downloads ou credenciais;
+- retorno, volatilidade, correlação ou drawdown, reservados à Fase 6;
+- conversão cambial e escolha de moeda-base;
+- banco de dados, UI ou processamento assíncrono;
+- calendários de bolsa completos e preenchimento estatístico avançado.
+
+### Arquivos inicialmente previstos
+
+```text
+src/zeus_risk/domain/market_data.py
+src/zeus_risk/market_data/__init__.py
+src/zeus_risk/market_data/provider.py
+src/zeus_risk/market_data/csv_provider.py
+src/zeus_risk/market_data/alignment.py
+src/zeus_risk/market_data/cache.py
+tests/unit/domain/test_market_data.py
+tests/unit/market_data/
+tests/integration/test_csv_market_data_provider.py
+tests/fixtures/market_data/
+docs/models/market-data.md
+```
+
+### Decisões a fechar na Fase 5
+
+- representação de data e frequência;
+- contrato CSV longo ou largo e aliases de cabeçalho;
+- política inicial de preços ausentes;
+- semântica de interseção e união no alinhamento;
+- validade, chave e conteúdo do cache;
+- tratamento de preço zero, negativo, `NaN` e infinito;
+- limites de tamanho para operação síncrona.
+
+### Critérios de saída previstos
+
+- domínio de mercado importa sem pandas, Qt ou provider concreto;
+- provider local nunca acessa a rede;
+- metadados identificam fonte, período, frequência e observações;
+- datas e preços inválidos produzem códigos estáveis;
+- alinhamento é determinístico e preserva a política utilizada;
+- cache não perde a referência à fonte nem altera silenciosamente os dados;
+- testes reconciliam séries sintéticas manualmente verificáveis;
+- Ruff, mypy, testes, cobertura e build permanecem aprovados.
+
+### Commit sugerido para a Fase 5
+
+```text
+feat(market-data): add local price series provider
 ```
 
 ## Template obrigatório para cada fase

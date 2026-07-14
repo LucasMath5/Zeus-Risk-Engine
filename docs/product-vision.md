@@ -111,7 +111,7 @@ O produto combina três qualidades que normalmente aparecem separadas:
 A primeira versão funcional deverá permitir que uma pessoa:
 
 1. inicie a aplicação;
-2. importe uma carteira CSV;
+2. importe uma carteira CSV ou XLSX;
 3. revise erros e avisos de validação;
 4. carregue preços de arquivos locais;
 5. calcule pesos, retornos, volatilidade e drawdown;

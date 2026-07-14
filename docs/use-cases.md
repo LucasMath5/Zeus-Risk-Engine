@@ -32,7 +32,7 @@ os testes de integração e, posteriormente, os fluxos da interface.
 | ID | Caso de uso | Entrega | Prioridade |
 |---|---|---|---:|
 | UC-01 | Iniciar a aplicação | MVP | alta |
-| UC-02 | Importar carteira CSV | MVP | alta |
+| UC-02 | Importar carteira CSV ou XLSX | MVP | alta |
 | UC-03 | Revisar e validar posições | MVP | alta |
 | UC-04 | Carregar preços locais | MVP | alta |
 | UC-05 | Configurar uma análise | MVP | alta |
@@ -65,7 +65,7 @@ compreensível e preserva detalhes para diagnóstico; não é ocultada.
 **Critérios de aceitação:** iniciar não exige internet; a interface não executa
 cálculos no carregamento; versão e autoria são identificáveis.
 
-## UC-02 — Importar carteira CSV
+## UC-02 — Importar carteira CSV ou XLSX
 
 **Objetivo:** transformar um arquivo local em linhas normalizadas e problemas de
 importação revisáveis.
@@ -74,16 +74,17 @@ importação revisáveis.
 
 **Fluxo principal:**
 
-1. O usuário seleciona um CSV.
-2. O sistema lê cabeçalho e linhas com política de codificação documentada.
+1. O usuário seleciona um arquivo CSV ou XLSX.
+2. O sistema aplica a política documentada de codificação ou seleção de worksheet.
 3. Nomes de colunas conhecidos são normalizados.
 4. Tipos são convertidos sem descartar silenciosamente a entrada original.
 5. Cada linha recebe estado válido, aviso ou erro.
 6. O sistema retorna posições candidatas, problemas e resumo da importação.
 
-**Alternativas e falhas:** arquivo ausente, ilegível, vazio, cabeçalho inválido,
-campo obrigatório ausente, tipo inválido e linha duplicada produzem códigos de
-problema específicos. Erros de uma linha não encerram a revisão das demais.
+**Alternativas e falhas:** arquivo ausente, ilegível, vazio, worksheet ambígua,
+cabeçalho inválido, campo obrigatório ausente, fórmula, tipo inválido e linha duplicada
+produzem códigos de problema específicos. Erros de uma linha não encerram a revisão das
+demais.
 
 **Critérios de aceitação:** não há chamadas externas; a ordem das linhas pode ser
 rastreada; nenhuma linha inválida se torna posição válida por coerção silenciosa.

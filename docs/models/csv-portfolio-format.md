@@ -223,7 +223,8 @@ if result.portfolio is not None:
   erros;
 - não há edição de célula, confirmação visual ou escolha interativa de mapeamento;
 - não há consulta externa para validar existência do ticker;
-- não há XLSX, conversão cambial ou dados históricos;
+- XLSX usa um adapter separado com o mesmo contrato; ainda não há conversão cambial ou
+  dados históricos;
 - dados originais podem conter informação sensível e não devem ser copiados para logs
   indiscriminadamente.
 

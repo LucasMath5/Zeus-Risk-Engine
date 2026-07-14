@@ -10,6 +10,7 @@ from zeus_risk.importers.models import (
     ImportSummary,
     LocatedValidationIssue,
 )
+from zeus_risk.importers.xlsx_portfolio import XlsxImportOptions, XlsxPortfolioImporter
 
 __all__ = [
     "ColumnMapping",
@@ -21,4 +22,6 @@ __all__ = [
     "ImportStatus",
     "ImportSummary",
     "LocatedValidationIssue",
+    "XlsxImportOptions",
+    "XlsxPortfolioImporter",
 ]

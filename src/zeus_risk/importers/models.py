@@ -84,13 +84,14 @@ class ImportResult:
     """Portfolio import output with provenance, review rows, and global issues."""
 
     source_name: str
-    encoding: str
-    delimiter: str
+    encoding: str | None
+    delimiter: str | None
     column_mappings: tuple[ColumnMapping, ...]
     rows: tuple[ImportRow, ...]
     summary: ImportSummary
     portfolio: Portfolio | None
     issues: tuple[ValidationIssue, ...] = ()
+    worksheet_name: str | None = None
 
     @property
     def positions(self) -> tuple[Position, ...]:

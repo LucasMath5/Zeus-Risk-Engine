@@ -31,7 +31,10 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Typing :: Typed",
 ]
-dependencies = []
+dependencies = [
+    "defusedxml>=0.7.1,<1",
+    "openpyxl>=3.1.5,<4",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -40,6 +43,8 @@ dev = [
     "pytest>=8.3,<10",
     "pytest-cov>=6,<8",
     "ruff>=0.11,<1",
+    "types-defusedxml>=0.7.0.20260504,<1",
+    "types-openpyxl>=3.1.5.20260518,<4",
 ]
 
 [project.scripts]

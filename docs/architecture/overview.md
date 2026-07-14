@@ -109,11 +109,12 @@ diferentes não são agregados sem conversão explícita, conforme o
 
 ### Importação
 
-A Fase 3 entrega um adapter CSV que transforma conteúdo UTF-8 em `ImportResult`,
-preservando linhas, valores originais, mapeamentos e problemas. Erros estruturais
-geram `PortfolioImportError`; erros recuperáveis permanecem associados à linha. A
-leitura de CSV/XLSX é detalhe de adapter; invariantes de posição continuam no domínio
-e são reutilizadas pelo importador.
+As Fases 3 e 4 entregam adapters CSV e XLSX que transformam arquivos locais em
+`ImportResult`, preservando linhas, valores originais, mapeamentos, worksheet e
+problemas. `tabular.py` concentra aliases e validações compartilhadas; detalhes de
+delimitador, workbook e célula permanecem nos respectivos adapters. Erros estruturais
+geram `PortfolioImportError`; erros recuperáveis permanecem associados à linha. As
+invariantes de posição continuam no domínio e são reutilizadas pelos dois formatos.
 
 ### Dados de mercado
 
@@ -322,7 +323,9 @@ zeus-risk-engine/
 │       ├── exporters/
 │       ├── importers/
 │       │   ├── csv_portfolio.py
-│       │   └── models.py
+│       │   ├── models.py
+│       │   ├── tabular.py
+│       │   └── xlsx_portfolio.py
 │       ├── infrastructure/
 │       ├── market_data/
 │       └── repositories/
@@ -343,10 +346,10 @@ zeus-risk-engine/
 
 ### Política de criação incremental
 
-Até a Fase 3 foram criados a fundação executável, o domínio de carteira e o adapter
-CSV. Cada subpacote de `core`, adapter, pasta de teste ou asset futuro só será criado
-com seu primeiro conteúdo real. Isso evita estrutura ornamental e torna cada mudança
-explicável.
+Até a Fase 4 foram criados a fundação executável, o domínio de carteira e os adapters
+CSV/XLSX com validação tabular compartilhada. Cada subpacote de `core`, adapter, pasta
+de teste ou asset futuro só será criado com seu primeiro conteúdo real. Isso evita
+estrutura ornamental e torna cada mudança explicável.
 
 ## Decisões ainda necessárias
 
@@ -354,7 +357,6 @@ explicável.
 - ADR sobre convenção de sinal de VaR e Expected Shortfall;
 - ADR sobre política de datas e missing values;
 - ADR sobre persistência SQLite e migrações;
-- decisão sobre contratos de importação e preservação da linha original;
 - decisão sobre o primeiro formato de exportação;
 - decisão sobre ambientes desktop oficialmente suportados.
 

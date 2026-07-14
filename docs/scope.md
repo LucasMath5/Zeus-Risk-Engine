@@ -46,7 +46,7 @@ de entrega e decisões já aceitas.
 ### Fluxo principal incluído
 
 1. Iniciar a aplicação desktop.
-2. Importar uma carteira em CSV.
+2. Importar uma carteira em CSV ou XLSX.
 3. Normalizar colunas e validar as posições.
 4. Exibir linhas válidas, avisos e erros sem encerrar inesperadamente.
 5. Carregar séries de preços de arquivos locais.
@@ -99,7 +99,7 @@ serão documentados nas fases em que cada cálculo for implementado.
 ### Interface inicial
 
 - janela principal;
-- fluxo de importação CSV;
+- fluxo de importação CSV ou XLSX;
 - tabela de posições;
 - painel de validação;
 - configuração mínima dos cálculos disponíveis;
@@ -148,7 +148,7 @@ disso.
 
 ## Capacidades planejadas depois do primeiro fluxo
 
-- importação XLSX e mapeamento de colunas;
+- mapeamento interativo de colunas importadas;
 - configurações e projetos persistentes;
 - VaR paramétrico normal e EWMA;
 - backtesting com Kupiec, Christoffersen e traffic light;

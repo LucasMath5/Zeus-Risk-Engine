@@ -76,12 +76,13 @@ forem a forma mais reconhecida no mercado.
 | **Schema version** | Identificador da estrutura de um arquivo ou mensagem persistida, usado para validar compatibilidade e migração. |
 | **Severidade** | Classificação `info`, `warning` ou `error` atribuída a um problema de validação. |
 | **Aviso (`warning`)** | Problema não fatal que pode reduzir qualidade ou interpretação e deve acompanhar o resultado. |
+| **Worksheet** | Planilha nomeada dentro de um workbook XLSX; uma importação processa exatamente uma worksheet e preserva seu nome. |
 
 ## Arquitetura e engenharia
 
 | Termo | Definição no projeto |
 |---|---|
-| **Adapter** | Implementação que traduz entre um contrato interno e uma tecnologia externa, como CSV, SQLite ou Qt. |
+| **Adapter** | Implementação que traduz entre um contrato interno e uma tecnologia externa, como CSV, XLSX, SQLite ou Qt. |
 | **ADR** | *Architecture Decision Record*; registro versionado do contexto, decisão, alternativas e consequências de uma escolha arquitetural. |
 | **Camada de aplicação** | Coordena casos de uso, transações e chamadas a contratos, sem conter fórmulas quantitativas ou detalhes de widgets. |
 | **Core quantitativo** | Código de domínio e cálculo financeiro/estatístico executável sem interface gráfica. |

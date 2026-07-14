@@ -23,10 +23,13 @@ and the project intends to follow [Semantic Versioning](https://semver.org/spec/
 - Controlled delimiter detection, Portuguese/English aliases, row status, provenance,
   partial portfolio results, and structured import exceptions.
 - Synthetic CSV sample, versioned fixtures, format documentation, and importer tests.
+- Resource-bounded XLSX importer with worksheet listing and explicit selection.
+- Shared tabular validation for CSV/XLSX, formula and cell-type rejection, archive
+  safeguards, source provenance, and partial results.
+- XLSX format documentation and synthetic workbook tests generated at test time.
 
 ### Notes
 
 - Version `0.1.0` identifies the current pre-alpha codebase; no release tag has been
   published yet.
-- No portfolio, importer, market-data, risk-model, or graphical-interface behavior is
-  included in this foundation phase.
+- Market-data, risk-model, and graphical-interface behavior are not implemented yet.

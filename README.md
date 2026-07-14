@@ -12,10 +12,10 @@ analyzing, and monitoring the risk of financial portfolios. It is designed as a
 professional software-engineering and quantitative-finance portfolio project, with
 an emphasis on reproducibility, auditability, clear assumptions, and learning.
 
-**Current status:** Phase 3 — CSV portfolio import. The package now reads UTF-8 CSV
-portfolios into the validated domain, preserving row status, original fields, warnings,
-errors, column mappings, and source metadata. XLSX and risk calculations are not yet
-implemented.
+**Current status:** Phase 4 — CSV and XLSX portfolio import. The package reads local
+portfolio files into the validated domain, preserving row status, original fields,
+warnings, errors, column mappings, worksheet selection, and source metadata. Risk
+calculations are not yet implemented.
 
 Author: Lucas Silva
 
@@ -40,8 +40,10 @@ The current foundation provides:
 - signed and gross market values separated by currency;
 - net and gross position weights with explicit denominator conventions;
 - validated UTF-8 CSV import with controlled delimiter detection;
+- resource-bounded XLSX import with explicit worksheet selection;
 - Portuguese and English header aliases, row-level status, and partial results;
-- synthetic offline CSV sample and integration fixtures;
+- formula and unsupported-cell rejection without executing workbook content;
+- synthetic offline CSV sample and temporary workbooks in XLSX integration tests;
 - automated tests, coverage, linting, formatting, and strict type checking;
 - continuous integration on supported Python and operating-system combinations;
 - product, scope, architecture, roadmap, glossary, and decision documentation.
@@ -57,7 +59,7 @@ Zeus Risk Engine 0.1.0
 
 The project will add capabilities incrementally:
 
-- XLSX portfolio import and interactive column mapping;
+- interactive portfolio column mapping;
 - local market-data providers and cache;
 - returns, volatility, correlation, covariance, drawdown, and concentration;
 - historical and parametric VaR, Expected Shortfall, and EWMA;
@@ -100,10 +102,10 @@ enforceable dependency rules.
 
 - Python 3.11 or newer;
 - Git for cloning the repository;
-- internet access only to install development packages.
+- internet access to install Python dependencies; execution remains offline.
 
-The Phase 1 runtime has no third-party dependency. Basic commands and tests do not
-call external services.
+Runtime dependencies are limited to `openpyxl` and `defusedxml` for the XLSX adapter.
+Basic commands, imports, tests, and examples do not call external services.
 
 ## Installation
 
@@ -187,14 +189,15 @@ the domain and quantitative modules exist.
 - [Architecture decisions](docs/decisions/)
 - [Portfolio domain model](docs/models/portfolio-domain.md)
 - [CSV portfolio format](docs/models/csv-portfolio-format.md)
+- [XLSX portfolio format](docs/models/xlsx-portfolio-format.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
 ## Roadmap
 
-The next planned phase is **Phase 4 — XLSX portfolio import**, reusing the same domain
-validation and structured import-result contracts while adding workbook and worksheet
-selection. Advanced models will only be introduced in their documented phases.
+The next planned phase is **Phase 5 — local market data**, introducing typed price
+series, source metadata, a provider contract, local CSV implementation, alignment, and
+cache behavior. Advanced models will only be introduced in their documented phases.
 
 ## License
 
