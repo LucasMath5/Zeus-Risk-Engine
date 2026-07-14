@@ -12,8 +12,9 @@ analyzing, and monitoring the risk of financial portfolios. It is designed as a
 professional software-engineering and quantitative-finance portfolio project, with
 an emphasis on reproducibility, auditability, clear assumptions, and learning.
 
-**Current status:** Phase 1 — repository foundation. The package and quality pipeline
-are executable, but portfolio models and risk calculations have not been implemented.
+**Current status:** Phase 2 — portfolio domain. The package now models validated
+instruments, long/short positions, multi-currency portfolios, valuations, and explicit
+net/gross weights. Importers and risk calculations have not been implemented.
 
 Author: Lucas Silva
 
@@ -33,6 +34,10 @@ The current foundation provides:
 - an installable `zeus_risk` package at version `0.1.0`;
 - `zeus-risk` and `python -m zeus_risk` command-line entry points;
 - project metadata and a `src` package layout;
+- immutable `Currency`, `Instrument`, `Position`, and `Portfolio` domain models;
+- structured validation issues with stable machine-readable codes;
+- signed and gross market values separated by currency;
+- net and gross position weights with explicit denominator conventions;
 - automated tests, coverage, linting, formatting, and strict type checking;
 - continuous integration on supported Python and operating-system combinations;
 - product, scope, architecture, roadmap, glossary, and decision documentation.
@@ -48,7 +53,6 @@ Zeus Risk Engine 0.1.0
 
 The project will add capabilities incrementally:
 
-- portfolio domain models and validation;
 - CSV and XLSX portfolio import;
 - local market-data providers and cache;
 - returns, volatility, correlation, covariance, drawdown, and concentration;
@@ -182,10 +186,10 @@ the domain and quantitative modules exist.
 
 ## Roadmap
 
-The next planned phase is **Phase 2 — Portfolio domain modeling**, covering
-`Instrument`, `Position`, `Portfolio`, structured validation, market value, weights,
-and their unit tests. Advanced models will only be introduced in their documented
-phases.
+The next planned phase is **Phase 3 — CSV portfolio import**, covering standard-library
+CSV parsing, column normalization, row-level status, structured import results, an
+example portfolio, and integration tests. Advanced models will only be introduced in
+their documented phases.
 
 ## License
 

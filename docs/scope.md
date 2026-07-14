@@ -205,7 +205,7 @@ de um ADR existente.
 
 ## Pontos para revisão do autor
 
-- CSV deve aceitar posições vendidas já no primeiro fluxo?
+- Como o CSV deve distinguir uma posição vendida válida de um sinal digitado por engano?
 - A primeira versão deve tratar apenas uma moeda-base ou converter moedas?
 - Qual será o primeiro formato de exportação: CSV, JSON ou ambos?
 - Quais sistemas operacionais devem ser oficialmente suportados no portfólio?

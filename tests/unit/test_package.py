@@ -20,7 +20,7 @@ def test_importing_package_does_not_import_qt() -> None:
     """The package foundation must stay independent from the future GUI."""
 
     import_check = (
-        "import sys; import zeus_risk; "
+        "import sys; import zeus_risk; import zeus_risk.domain; "
         "qt_loaded = any(name == 'PySide6' or name.startswith('PySide6.') "
         "for name in sys.modules); raise SystemExit(qt_loaded)"
     )

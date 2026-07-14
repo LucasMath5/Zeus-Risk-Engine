@@ -18,7 +18,7 @@
 |---:|---|---|---|---|
 | 0 | planejamento e especificação | nenhuma | visão, escopo, casos, glossário, arquitetura, roadmap e ADRs revisáveis | concluída |
 | 1 | fundação do repositório | Fase 0 | pacote instalável, CLI mínima, metadados, qualidade e testes básicos | concluída |
-| 2 | domínio de carteira | Fase 1 | instrumentos, posições, carteira, validações, valor e pesos testados | planejada |
+| 2 | domínio de carteira | Fase 1 | instrumentos, posições, carteira, validações, valor e pesos testados | concluída |
 | 3 | importação CSV | Fase 2 | normalização, parsing, problemas por linha e fixture de exemplo | planejada |
 | 4 | importação XLSX | Fase 3 | seleção de planilha e mapeamento integrados à mesma validação | planejada |
 | 5 | dados de mercado locais | Fases 2–3 | port, provider CSV, séries, metadados, alinhamento e cache testados | planejada |
@@ -115,10 +115,9 @@ Eliminar ambiguidades de propósito e arquitetura antes de iniciar o pacote.
 
 ### Revisão necessária
 
-O autor deve confirmar público prioritário, suporte inicial a posições vendidas,
-moeda-base, classe de ativo dos exemplos, formato mínimo de exportação e sistemas
-operacionais pretendidos. Essas respostas refinam fases futuras, mas não impedem
-a fundação genérica da Fase 1.
+O autor ainda deve confirmar público prioritário, moeda-base, classe de ativo dos
+exemplos, formato mínimo de exportação e sistemas operacionais pretendidos. O suporte
+a posições vendidas foi decidido na Fase 2. As demais respostas refinam fases futuras.
 
 ## Fase 1 — Fundação concluída
 
@@ -197,11 +196,11 @@ permanecem ausentes até que uma fase realmente as utilize.
 chore: establish Python package and quality tooling
 ```
 
-## Próxima etapa recomendada — Fase 2
+## Fase 2 — Domínio de carteira concluído
 
 ### Objetivo
 
-Modelar as entidades mínimas de uma carteira e suas invariantes, permitindo
+Foram modeladas as entidades mínimas de uma carteira e suas invariantes, permitindo
 calcular valor de mercado e pesos sem depender de importadores, dados de mercado
 ou interface gráfica.
 
@@ -223,44 +222,43 @@ ou interface gráfica.
 - persistência e interface PySide6;
 - taxonomias extensas sem uso no fluxo inicial.
 
-### Arquivos inicialmente previstos
+### Arquivos entregues
 
 ```text
 src/zeus_risk/domain/__init__.py
+src/zeus_risk/domain/currency.py
 src/zeus_risk/domain/enums.py
 src/zeus_risk/domain/instrument.py
 src/zeus_risk/domain/position.py
 src/zeus_risk/domain/portfolio.py
 src/zeus_risk/domain/validation.py
 tests/unit/domain/test_instrument.py
+tests/unit/domain/test_currency.py
 tests/unit/domain/test_position.py
 tests/unit/domain/test_portfolio.py
 tests/unit/domain/test_validation.py
+docs/models/portfolio-domain.md
+docs/decisions/ADR-003-decimal-and-portfolio-weights.md
 ```
 
-A divisão exata deve acompanhar responsabilidades reais; módulos muito pequenos
-podem ser combinados se isso melhorar a leitura.
+### Decisões fechadas na Fase 2
 
-### Decisões a fechar na Fase 2
+- `Decimal` representa quantidade, preço, valor de mercado e pesos;
+- quantidade negativa representa posição vendida e quantidade zero é inválida;
+- pesos possuem bases explícitas `net` e `gross`;
+- carteira multimoeda é permitida, mas agregação sem moeda explícita é rejeitada;
+- ticker é normalizado e a chave inicial de duplicidade é ticker mais moeda;
+- invariantes impedem construção inválida e preservam `ValidationIssue` na exceção.
 
-- uso de `Decimal` ou `float` para quantidade, preço e valores monetários;
-- suporte inicial a posições vendidas e quantidade zero;
-- base de pesos quando houver exposições líquidas negativas ou nulas;
-- representação de moeda sem presumir conversão cambial;
-- normalização e unicidade do ticker dentro do domínio;
-- quais campos são invariantes do objeto e quais são problemas agregados de
-  validação.
-
-### Critérios de saída previstos
+### Evidências de conclusão
 
 - objetos inválidos não são construídos silenciosamente;
-- valor total reconcilia com a soma das posições dentro da regra numérica
-  escolhida;
-- pesos reconciliam com a base documentada;
+- valor líquido e bruto reconciliam com exemplos manuais;
+- pesos líquidos e brutos reconciliam dentro de tolerância decimal explícita;
 - problemas possuem severidade, código e localização estáveis;
 - domínio importa sem PySide6 e sem bibliotecas de leitura de dados;
-- Ruff, mypy, testes e build continuam aprovados;
-- documentação explica as decisões numéricas e casos-limite.
+- Ruff, mypy e 63 testes são aprovados localmente, com 99% de cobertura;
+- documentação e ADR explicam fórmulas, hipóteses, interpretação e limitações.
 
 ### Testes previstos
 
@@ -276,6 +274,82 @@ podem ser combinados se isso melhorar a leitura.
 
 ```text
 feat(portfolio): add core domain models and valuation
+```
+
+## Próxima etapa recomendada — Fase 3
+
+### Objetivo
+
+Importar uma carteira CSV para os modelos da Fase 2, preservando valores de origem,
+número da linha e todos os problemas encontrados, sem interromper a análise do arquivo
+no primeiro erro.
+
+### Funcionalidades incluídas
+
+- leitura CSV com a biblioteca padrão;
+- normalização e aliases documentados de cabeçalho;
+- validação de colunas obrigatórias;
+- conversão explícita de quantidade e preço para `Decimal`;
+- mapeamento de classe de ativo, moeda e setor;
+- status `valid`, `warning` ou `error` por linha;
+- `ImportResult` estruturado com posições aceitas, linhas e resumo;
+- detecção de ticker/moeda duplicado no arquivo;
+- arquivo sintético de exemplo e testes de integração.
+
+### Fora da Fase 3
+
+- XLSX, escolha de planilha ou mapeamento visual;
+- correção de células dentro da aplicação;
+- consulta externa para reconhecer tickers;
+- dados de mercado, interface PySide6 ou persistência;
+- pandas como dependência obrigatória para um fluxo que a biblioteca padrão atende.
+
+### Arquivos inicialmente previstos
+
+```text
+src/zeus_risk/importers/__init__.py
+src/zeus_risk/importers/csv_portfolio.py
+src/zeus_risk/importers/models.py
+tests/unit/importers/test_csv_portfolio.py
+tests/integration/test_csv_portfolio_import.py
+tests/fixtures/portfolios/sample_portfolio.csv
+assets/samples/portfolio.csv
+docs/models/csv-portfolio-format.md
+```
+
+### Decisões a fechar na Fase 3
+
+- codificações aceitas e comportamento de fallback;
+- delimitador explícito ou detecção controlada;
+- aliases permitidos para cabeçalhos;
+- política para coluna extra, linha vazia e setor ausente;
+- diferença entre linha inválida e arquivo estruturalmente inválido;
+- preservação segura dos valores originais em mensagens e logs.
+
+### Critérios de saída previstos
+
+- um erro de linha não impede o relatório das demais;
+- posições válidas usam exatamente os modelos da Fase 2;
+- cada problema identifica código, campo, item e linha;
+- ausência de coluna obrigatória falha com erro de importação específico;
+- nenhuma coerção silenciosa de números inválidos;
+- exemplo funciona offline e não contém dados confidenciais;
+- Ruff, mypy, testes, cobertura e build permanecem aprovados.
+
+### Testes previstos
+
+- arquivo válido completo e setor opcional;
+- cabeçalhos normalizados e aliases suportados;
+- coluna obrigatória ausente, arquivo vazio e CSV malformado;
+- quantidade/preço inválidos, `NaN`, infinito e quantidade zero;
+- classe, moeda e ticker inválidos;
+- duplicidades e múltiplos problemas no mesmo arquivo;
+- codificação e delimitador segundo as políticas escolhidas.
+
+### Commit sugerido para a Fase 3
+
+```text
+feat(import): add validated CSV portfolio importer
 ```
 
 ## Template obrigatório para cada fase

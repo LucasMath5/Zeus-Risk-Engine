@@ -14,6 +14,11 @@ and the project intends to follow [Semantic Versioning](https://semver.org/spec/
 - Minimal `zeus-risk` and `python -m zeus_risk` command-line entry points.
 - Pytest, coverage, Ruff, mypy, packaging, and GitHub Actions configuration.
 - Project README, MIT license, contribution guide, and repository hygiene files.
+- Immutable currency, instrument, position, and portfolio domain models.
+- Structured validation issues and domain failures with stable error codes.
+- Decimal market valuation, long/short support, multi-currency safeguards, and explicit
+  net/gross position weights.
+- Mathematical portfolio-domain documentation and ADR-003 for numeric conventions.
 
 ### Notes
 

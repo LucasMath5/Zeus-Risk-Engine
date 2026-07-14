@@ -39,7 +39,9 @@ forem a forma mais reconhecida no mercado.
 | **Moeda-base** | Moeda na qual os valores agregados da carteira são expressos. Conversão cambial não deve ser presumida. |
 | **Monte Carlo** | Método de simulação que gera cenários aleatórios segundo um modelo e uma seed controlável para estimar a distribuição de resultados. |
 | **P&L** | *Profit and Loss*; ganho ou perda em um período, cuja base de cálculo deve ser compatível com o risco previsto. |
-| **Peso** | Participação de uma posição em uma base agregada. A base — valor líquido, bruto ou outra — deve ser explicitada. |
+| **Peso** | Participação de uma posição em uma base agregada. Na Fase 2, a base é explicitamente líquida ou bruta. |
+| **Peso bruto** | Valor absoluto da posição dividido pela exposição bruta da mesma moeda; é não negativo e a soma é aproximadamente 1. |
+| **Peso líquido** | Valor assinado da posição dividido pelo valor líquido da mesma moeda; pode ser negativo ou maior que 1 e não existe quando o denominador é zero. |
 | **Posição (`Position`)** | Quantidade de um instrumento mantida em uma carteira, acompanhada do preço e classificações necessárias. |
 | **Preço ajustado** | Série alterada para refletir eventos como dividendos e desdobramentos. A origem e o tipo do ajuste devem ser metadados. |
 | **Retorno logarítmico** | `ln(P_t / P_{t-1})`; é aditivo no tempo, mas não corresponde diretamente ao percentual simples para variações grandes. |
@@ -82,6 +84,7 @@ forem a forma mais reconhecida no mercado.
 | **Core quantitativo** | Código de domínio e cálculo financeiro/estatístico executável sem interface gráfica. |
 | **Domínio** | Modelos, invariantes, tipos de valor e regras que expressam o problema financeiro. |
 | **DTO** | Objeto de transporte com contrato explícito usado em fronteiras; não substitui automaticamente uma entidade de domínio. |
+| **Decimal** | Tipo numérico usado no domínio para quantidade, preço, valor e pesos, construído preferencialmente a partir de texto para evitar herdar aproximações binárias de `float`. |
 | **Port** | Protocolo ou interface definido pelo lado consumidor para acessar uma capacidade externa sem depender de sua implementação. |
 | **Provider de dados de mercado** | Port que fornece séries e metadados; implementações futuras podem usar arquivos, demonstrações, cache ou APIs. |
 | **Repository** | Port orientado à persistência e recuperação de entidades ou agregados, introduzido apenas quando houver caso de uso real. |
@@ -93,7 +96,6 @@ Antes da implementação correspondente, devem ser definidos e documentados:
 
 - convenção de sinal de perdas, VaR e Expected Shortfall;
 - método de quantil empírico;
-- base de pesos para carteiras com posições vendidas;
 - estimador e fator de anualização da volatilidade;
 - calendário, timezone e alinhamento de datas;
 - política de missing values;

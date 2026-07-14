@@ -100,10 +100,12 @@ define limites futuros, não exige esqueletos vazios na Fase 0.
 
 ### Domínio de carteira
 
-Começa com `Instrument`, `Position`, `Portfolio` e `ValidationIssue`. Objetos de
-valor devem validar invariantes locais; validações que dependem de várias linhas
-ou fontes ficam em serviços explícitos. Composição e dataclasses são preferíveis
-a hierarquias profundas.
+A Fase 2 entrega `Currency`, `Instrument`, `Position`, `Portfolio` e
+`ValidationIssue`. Objetos de valor validam invariantes locais; validações que
+dependem de várias linhas ou fontes ficam em serviços explícitos. Composição e
+dataclasses imutáveis são preferíveis a hierarquias profundas. Valores de moedas
+diferentes não são agregados sem conversão explícita, conforme o
+[ADR-003](../decisions/ADR-003-decimal-and-portfolio-weights.md).
 
 ### Importação
 
@@ -170,8 +172,8 @@ registrada no [ADR-002](../decisions/ADR-002-use-of-pyside6.md).
 | `RiskResult` | métrica, valor, unidade, modelo, parâmetros e problemas |
 | `ExecutionRecord` | evidência reproduzível de uma execução futura |
 
-Esses nomes são um vocabulário inicial. A forma concreta será definida na Fase 2
-e só deve incluir campos usados por casos de uso reais.
+Os contratos de carteira foram concretizados na Fase 2; os demais continuam como
+vocabulário inicial e só devem incluir campos usados por casos de uso reais.
 
 ## Validação e tratamento de falhas
 
@@ -285,10 +287,12 @@ zeus-risk-engine/
 │   ├── concepts/              # fórmulas e interpretação, a partir da Fase 6
 │   ├── decisions/
 │   │   ├── ADR-001-separation-of-ui-and-core.md
-│   │   └── ADR-002-use-of-pyside6.md
+│   │   ├── ADR-002-use-of-pyside6.md
+│   │   └── ADR-003-decimal-and-portfolio-weights.md
 │   ├── development/
 │   │   └── roadmap.md
-│   ├── models/                # documentação de modelos quando implementados
+│   ├── models/
+│   │   └── portfolio-domain.md
 │   ├── tutorials/             # fluxos executáveis quando existirem
 │   ├── glossary.md
 │   ├── product-vision.md
@@ -335,14 +339,14 @@ zeus-risk-engine/
 
 ### Política de criação incremental
 
-Na Fase 0 existem apenas os documentos solicitados. Na Fase 1 entram os arquivos
-de fundação e o menor pacote executável. Cada subpacote de `core`, adapter, pasta
-de teste ou asset só será criado com seu primeiro conteúdo real. Isso evita
-estrutura ornamental e torna cada mudança explicável.
+Até a Fase 2 foram criados a fundação executável e o domínio de carteira. Cada
+subpacote de `core`, adapter, pasta de teste ou asset futuro só será criado com seu
+primeiro conteúdo real. Isso evita estrutura ornamental e torna cada mudança
+explicável.
 
 ## Decisões ainda necessárias
 
-- ADR sobre representação monetária e moeda-base;
+- ADR sobre conversão para moeda-base e fontes de câmbio;
 - ADR sobre convenção de sinal de VaR e Expected Shortfall;
 - ADR sobre política de datas e missing values;
 - ADR sobre persistência SQLite e migrações;
@@ -371,3 +375,4 @@ estrutura ornamental e torna cada mudança explicável.
 - [Roadmap](../development/roadmap.md)
 - [ADR-001 — Separação entre interface e core](../decisions/ADR-001-separation-of-ui-and-core.md)
 - [ADR-002 — Uso de PySide6](../decisions/ADR-002-use-of-pyside6.md)
+- [ADR-003 — Decimal e pesos de carteira](../decisions/ADR-003-decimal-and-portfolio-weights.md)
