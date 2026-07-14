@@ -16,8 +16,8 @@
 
 | Fase | Entrega principal | Dependências | Critério resumido de saída | Estado |
 |---:|---|---|---|---|
-| 0 | planejamento e especificação | nenhuma | visão, escopo, casos, glossário, arquitetura, roadmap e ADRs revisáveis | em revisão |
-| 1 | fundação do repositório | Fase 0 | pacote instalável, CLI mínima, metadados, qualidade e testes básicos | planejada |
+| 0 | planejamento e especificação | nenhuma | visão, escopo, casos, glossário, arquitetura, roadmap e ADRs revisáveis | concluída |
+| 1 | fundação do repositório | Fase 0 | pacote instalável, CLI mínima, metadados, qualidade e testes básicos | concluída |
 | 2 | domínio de carteira | Fase 1 | instrumentos, posições, carteira, validações, valor e pesos testados | planejada |
 | 3 | importação CSV | Fase 2 | normalização, parsing, problemas por linha e fixture de exemplo | planejada |
 | 4 | importação XLSX | Fase 3 | seleção de planilha e mapeamento integrados à mesma validação | planejada |
@@ -120,13 +120,13 @@ moeda-base, classe de ativo dos exemplos, formato mínimo de exportação e sist
 operacionais pretendidos. Essas respostas refinam fases futuras, mas não impedem
 a fundação genérica da Fase 1.
 
-## Próxima etapa recomendada — Fase 1
+## Fase 1 — Fundação concluída
 
 ### Objetivo
 
-Criar uma fundação pequena e executável que prove instalação, importação do
-pacote, versionamento, CLI e ferramentas de qualidade, sem antecipar modelos de
-domínio.
+Foi criada uma fundação pequena e executável que comprova instalação, importação
+do pacote, versionamento, CLI e ferramentas de qualidade, sem antecipar modelos
+de domínio.
 
 ### Funcionalidades incluídas
 
@@ -138,14 +138,17 @@ domínio.
 - primeiro teste de instalação/importação e teste da CLI;
 - workflow de CI mínimo após os comandos locais estarem estáveis.
 
-### Arquivos previstos
+### Arquivos entregues
 
 ```text
 src/zeus_risk/__init__.py
 src/zeus_risk/__main__.py
+src/zeus_risk/_version.py
 src/zeus_risk/cli.py
+src/zeus_risk/py.typed
 tests/unit/test_package.py
-tests/integration/test_cli.py
+tests/unit/test_cli.py
+tests/integration/test_module_entrypoint.py
 pyproject.toml
 README.md
 LICENSE
@@ -155,29 +158,31 @@ CONTRIBUTING.md
 .github/workflows/quality.yml
 ```
 
-A lista poderá ser reduzida se um arquivo não tiver responsabilidade real na
-etapa. A decisão por PySide6 já está registrada, mas a biblioteca só deve ser
-declarada quando a primeira integração gráfica realmente a utilizar.
-Dependências quantitativas também só entram quando usadas.
+A decisão por PySide6 já está registrada, mas a biblioteca não foi declarada
+porque ainda não existe integração gráfica. Dependências quantitativas também
+permanecem ausentes até que uma fase realmente as utilize.
 
-### Decisões a fechar na Fase 1
+### Decisões fechadas na Fase 1
 
-- versão mínima de Python e matriz de CI;
-- ferramenta de build e metadados PEP 621;
-- Ruff como lint/formatter ou Ruff com Black;
-- mypy ou Pyright;
-- convenção de changelog e versionamento;
-- nome e comportamento exato do comando CLI.
+- Python mínimo 3.11, com testes de CI nos limites 3.11 e 3.14;
+- `setuptools` como backend e metadados PEP 621 em `pyproject.toml`;
+- Ruff como linter e formatter único, sem Black concorrente;
+- mypy em modo estrito para `src` e testes;
+- changelog no formato Keep a Changelog e intenção de Semantic Versioning;
+- CLI `zeus-risk`, também executável por `python -m zeus_risk`.
 
-### Critérios de saída previstos
+### Evidências de conclusão
 
-- instalação editável documentada em ambiente limpo;
-- `python -m zeus_risk --version` ou comando equivalente funciona;
-- lint, format check, type check e testes passam localmente;
-- a pipeline executa os mesmos comandos;
-- README explica instalar, executar, testar, roadmap, autor, licença e aviso de
-  uso educacional;
-- nenhum módulo financeiro vazio é criado.
+- instalação editável validada em ambiente virtual Python 3.12;
+- `python -m zeus_risk --version` e `zeus-risk --version` retornam 0.1.0;
+- Ruff, mypy estrito e sete testes passam localmente;
+- cobertura reportada em 95%, sem meta artificial nesta fase;
+- wheel e source distribution são construídos e o wheel passa por instalação de
+  smoke test;
+- workflow usa os mesmos comandos locais e aguarda validação remota após o push;
+- README documenta instalação, execução, testes, arquitetura, roadmap, autor,
+  licença e aviso de uso educacional;
+- nenhum módulo financeiro vazio ou dependência de runtime foi criado.
 
 ### Testes previstos
 
@@ -190,6 +195,87 @@ Dependências quantitativas também só entram quando usadas.
 
 ```text
 chore: establish Python package and quality tooling
+```
+
+## Próxima etapa recomendada — Fase 2
+
+### Objetivo
+
+Modelar as entidades mínimas de uma carteira e suas invariantes, permitindo
+calcular valor de mercado e pesos sem depender de importadores, dados de mercado
+ou interface gráfica.
+
+### Funcionalidades incluídas
+
+- enums ou objetos de valor mínimos para classe de ativo e moeda;
+- `Instrument`, `Position` e `Portfolio` com type hints e invariantes;
+- `ValidationSeverity` e `ValidationIssue` com códigos estáveis;
+- cálculo de valor de mercado por posição e total da carteira;
+- cálculo de pesos segundo uma base documentada;
+- validações agregadas, como ticker duplicado e carteira vazia;
+- testes unitários e casos numéricos manualmente verificáveis.
+
+### Fora da Fase 2
+
+- leitura de CSV ou XLSX;
+- providers e séries de preços;
+- retornos, volatilidade, drawdown, VaR ou Expected Shortfall;
+- persistência e interface PySide6;
+- taxonomias extensas sem uso no fluxo inicial.
+
+### Arquivos inicialmente previstos
+
+```text
+src/zeus_risk/domain/__init__.py
+src/zeus_risk/domain/enums.py
+src/zeus_risk/domain/instrument.py
+src/zeus_risk/domain/position.py
+src/zeus_risk/domain/portfolio.py
+src/zeus_risk/domain/validation.py
+tests/unit/domain/test_instrument.py
+tests/unit/domain/test_position.py
+tests/unit/domain/test_portfolio.py
+tests/unit/domain/test_validation.py
+```
+
+A divisão exata deve acompanhar responsabilidades reais; módulos muito pequenos
+podem ser combinados se isso melhorar a leitura.
+
+### Decisões a fechar na Fase 2
+
+- uso de `Decimal` ou `float` para quantidade, preço e valores monetários;
+- suporte inicial a posições vendidas e quantidade zero;
+- base de pesos quando houver exposições líquidas negativas ou nulas;
+- representação de moeda sem presumir conversão cambial;
+- normalização e unicidade do ticker dentro do domínio;
+- quais campos são invariantes do objeto e quais são problemas agregados de
+  validação.
+
+### Critérios de saída previstos
+
+- objetos inválidos não são construídos silenciosamente;
+- valor total reconcilia com a soma das posições dentro da regra numérica
+  escolhida;
+- pesos reconciliam com a base documentada;
+- problemas possuem severidade, código e localização estáveis;
+- domínio importa sem PySide6 e sem bibliotecas de leitura de dados;
+- Ruff, mypy, testes e build continuam aprovados;
+- documentação explica as decisões numéricas e casos-limite.
+
+### Testes previstos
+
+- instrumento válido e campos obrigatórios inválidos;
+- posição comprada, vendida ou zero conforme a decisão adotada;
+- cálculo manual de valor de mercado;
+- carteira vazia, duplicidades e agregações;
+- soma dos pesos dentro de tolerância explícita;
+- imutabilidade ou proteção contra mutação indevida;
+- ausência de `NaN` e infinito em entradas válidas.
+
+### Commit sugerido para a Fase 2
+
+```text
+feat(portfolio): add core domain models and valuation
 ```
 
 ## Template obrigatório para cada fase

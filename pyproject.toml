@@ -1,0 +1,101 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zeus-risk-engine"
+dynamic = ["version"]
+description = "A modular, educational, and auditable financial risk engine."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Lucas Silva" },
+]
+keywords = [
+    "financial-risk",
+    "market-risk",
+    "portfolio",
+    "quantitative-finance",
+    "risk-management",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "build>=1.2,<2",
+    "mypy>=1.15,<2",
+    "pytest>=8.3,<10",
+    "pytest-cov>=6,<8",
+    "ruff>=0.11,<1",
+]
+
+[project.scripts]
+zeus-risk = "zeus_risk.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/LucasMath5/Zeus-Risk-Engine"
+Documentation = "https://github.com/LucasMath5/Zeus-Risk-Engine/tree/main/docs"
+Issues = "https://github.com/LucasMath5/Zeus-Risk-Engine/issues"
+Repository = "https://github.com/LucasMath5/Zeus-Risk-Engine.git"
+
+[tool.setuptools.dynamic]
+version = { attr = "zeus_risk._version.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+zeus_risk = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--strict-config",
+    "--strict-markers",
+    "-ra",
+]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["zeus_risk"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]
+
+[tool.ruff.format]
+docstring-code-format = true
+line-ending = "lf"
+
+[tool.mypy]
+files = ["src", "tests"]
+python_version = "3.11"
+pretty = true
+show_error_codes = true
+strict = true
+warn_unreachable = true
