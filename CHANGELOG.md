@@ -19,6 +19,10 @@ and the project intends to follow [Semantic Versioning](https://semver.org/spec/
 - Decimal market valuation, long/short support, multi-currency safeguards, and explicit
   net/gross position weights.
 - Mathematical portfolio-domain documentation and ADR-003 for numeric conventions.
+- Validated UTF-8 CSV portfolio importer using only the Python standard library.
+- Controlled delimiter detection, Portuguese/English aliases, row status, provenance,
+  partial portfolio results, and structured import exceptions.
+- Synthetic CSV sample, versioned fixtures, format documentation, and importer tests.
 
 ### Notes
 

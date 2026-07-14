@@ -24,8 +24,8 @@ class Position:
                 "Position instrument must be an Instrument.",
                 field="instrument",
             )
-        _validate_quantity(self.quantity)
-        _validate_price(self.price)
+        validate_quantity(self.quantity)
+        validate_price(self.price)
 
     @property
     def market_value(self) -> Decimal:
@@ -34,7 +34,9 @@ class Position:
         return self.quantity * self.price
 
 
-def _validate_quantity(quantity: Decimal) -> None:
+def validate_quantity(quantity: Decimal) -> None:
+    """Validate a signed, non-zero position quantity."""
+
     if not isinstance(quantity, Decimal):
         raise_validation_error(
             "INVALID_QUANTITY_TYPE",
@@ -58,7 +60,9 @@ def _validate_quantity(quantity: Decimal) -> None:
         )
 
 
-def _validate_price(price: Decimal) -> None:
+def validate_price(price: Decimal) -> None:
+    """Validate a finite, strictly positive position price."""
+
     if not isinstance(price, Decimal):
         raise_validation_error(
             "INVALID_PRICE_TYPE",

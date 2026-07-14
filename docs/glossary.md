@@ -64,6 +64,9 @@ forem a forma mais reconhecida no mercado.
 | **Erro (`error`)** | Problema que invalida um item ou impede uma operação dependente dele. |
 | **Execução (`execution`)** | Ocorrência identificada de um caso de análise com versão, horário, entradas, configuração, resultados, duração e problemas. |
 | **Hash de entrada** | Resumo criptográfico calculado sobre uma representação canônica das entradas para auxiliar integridade e reprodução; não contém os dados originais. |
+| **ImportResult** | Resultado estruturado de importação que reúne proveniência, mapeamentos, linhas revisáveis, resumo, problemas e carteira aceita parcial ou integralmente. |
+| **ImportRow** | Representação de uma linha importada com número físico, valores originais, status, problemas e posição opcional. |
+| **ImportStatus** | Estado `valid`, `warning` ou `error` atribuído a uma linha após parsing e validação. |
 | **Informação (`info`)** | Observação contextual que não indica degradação ou invalidade. |
 | **Metadados de mercado (`MarketDataMetadata`)** | Identificação de ativo, fonte, frequência, intervalo, obtenção, quantidade e tratamento das séries. |
 | **Missing value** | Observação ausente. Remoção, preenchimento ou alinhamento deve seguir uma política declarada e registrada. |

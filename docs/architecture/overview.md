@@ -109,10 +109,11 @@ diferentes não são agregados sem conversão explícita, conforme o
 
 ### Importação
 
-Um importador transforma conteúdo externo em um `ImportResult`, preservando
-linhas, valores originais relevantes e problemas. A leitura de CSV/XLSX é um
-detalhe de adapter; a validação de uma posição pertence ao domínio ou a um
-serviço de validação reutilizável.
+A Fase 3 entrega um adapter CSV que transforma conteúdo UTF-8 em `ImportResult`,
+preservando linhas, valores originais, mapeamentos e problemas. Erros estruturais
+geram `PortfolioImportError`; erros recuperáveis permanecem associados à linha. A
+leitura de CSV/XLSX é detalhe de adapter; invariantes de posição continuam no domínio
+e são reutilizadas pelo importador.
 
 ### Dados de mercado
 
@@ -317,8 +318,11 @@ zeus-risk-engine/
 │       │   └── stress/
 │       ├── domain/
 │       ├── exceptions/
+│       │   └── portfolio.py
 │       ├── exporters/
 │       ├── importers/
+│       │   ├── csv_portfolio.py
+│       │   └── models.py
 │       ├── infrastructure/
 │       ├── market_data/
 │       └── repositories/
@@ -339,9 +343,9 @@ zeus-risk-engine/
 
 ### Política de criação incremental
 
-Até a Fase 2 foram criados a fundação executável e o domínio de carteira. Cada
-subpacote de `core`, adapter, pasta de teste ou asset futuro só será criado com seu
-primeiro conteúdo real. Isso evita estrutura ornamental e torna cada mudança
+Até a Fase 3 foram criados a fundação executável, o domínio de carteira e o adapter
+CSV. Cada subpacote de `core`, adapter, pasta de teste ou asset futuro só será criado
+com seu primeiro conteúdo real. Isso evita estrutura ornamental e torna cada mudança
 explicável.
 
 ## Decisões ainda necessárias

@@ -1,0 +1,3 @@
+ticker,quantity,price,asset_class,currency,sector
+TEST_A,10,25,equity,BRL,Energy
+TEST_B,5,70,equity,BRL,Materials

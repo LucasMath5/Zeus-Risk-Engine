@@ -12,9 +12,10 @@ analyzing, and monitoring the risk of financial portfolios. It is designed as a
 professional software-engineering and quantitative-finance portfolio project, with
 an emphasis on reproducibility, auditability, clear assumptions, and learning.
 
-**Current status:** Phase 2 — portfolio domain. The package now models validated
-instruments, long/short positions, multi-currency portfolios, valuations, and explicit
-net/gross weights. Importers and risk calculations have not been implemented.
+**Current status:** Phase 3 — CSV portfolio import. The package now reads UTF-8 CSV
+portfolios into the validated domain, preserving row status, original fields, warnings,
+errors, column mappings, and source metadata. XLSX and risk calculations are not yet
+implemented.
 
 Author: Lucas Silva
 
@@ -38,6 +39,9 @@ The current foundation provides:
 - structured validation issues with stable machine-readable codes;
 - signed and gross market values separated by currency;
 - net and gross position weights with explicit denominator conventions;
+- validated UTF-8 CSV import with controlled delimiter detection;
+- Portuguese and English header aliases, row-level status, and partial results;
+- synthetic offline CSV sample and integration fixtures;
 - automated tests, coverage, linting, formatting, and strict type checking;
 - continuous integration on supported Python and operating-system combinations;
 - product, scope, architecture, roadmap, glossary, and decision documentation.
@@ -53,7 +57,7 @@ Zeus Risk Engine 0.1.0
 
 The project will add capabilities incrementally:
 
-- CSV and XLSX portfolio import;
+- XLSX portfolio import and interactive column mapping;
 - local market-data providers and cache;
 - returns, volatility, correlation, covariance, drawdown, and concentration;
 - historical and parametric VaR, Expected Shortfall, and EWMA;
@@ -181,15 +185,16 @@ the domain and quantitative modules exist.
 - [Architecture overview](docs/architecture/overview.md)
 - [Development roadmap](docs/development/roadmap.md)
 - [Architecture decisions](docs/decisions/)
+- [Portfolio domain model](docs/models/portfolio-domain.md)
+- [CSV portfolio format](docs/models/csv-portfolio-format.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
 ## Roadmap
 
-The next planned phase is **Phase 3 — CSV portfolio import**, covering standard-library
-CSV parsing, column normalization, row-level status, structured import results, an
-example portfolio, and integration tests. Advanced models will only be introduced in
-their documented phases.
+The next planned phase is **Phase 4 — XLSX portfolio import**, reusing the same domain
+validation and structured import-result contracts while adding workbook and worksheet
+selection. Advanced models will only be introduced in their documented phases.
 
 ## License
 

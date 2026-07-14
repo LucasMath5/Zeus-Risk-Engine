@@ -19,7 +19,7 @@
 | 0 | planejamento e especificação | nenhuma | visão, escopo, casos, glossário, arquitetura, roadmap e ADRs revisáveis | concluída |
 | 1 | fundação do repositório | Fase 0 | pacote instalável, CLI mínima, metadados, qualidade e testes básicos | concluída |
 | 2 | domínio de carteira | Fase 1 | instrumentos, posições, carteira, validações, valor e pesos testados | concluída |
-| 3 | importação CSV | Fase 2 | normalização, parsing, problemas por linha e fixture de exemplo | planejada |
+| 3 | importação CSV | Fase 2 | normalização, parsing, problemas por linha e fixture de exemplo | concluída |
 | 4 | importação XLSX | Fase 3 | seleção de planilha e mapeamento integrados à mesma validação | planejada |
 | 5 | dados de mercado locais | Fases 2–3 | port, provider CSV, séries, metadados, alinhamento e cache testados | planejada |
 | 6 | analytics básicos | Fases 2 e 5 | retornos, volatilidade, correlação, drawdown e concentração documentados | planejada |
@@ -276,13 +276,13 @@ docs/decisions/ADR-003-decimal-and-portfolio-weights.md
 feat(portfolio): add core domain models and valuation
 ```
 
-## Próxima etapa recomendada — Fase 3
+## Fase 3 — Importação CSV concluída
 
 ### Objetivo
 
-Importar uma carteira CSV para os modelos da Fase 2, preservando valores de origem,
-número da linha e todos os problemas encontrados, sem interromper a análise do arquivo
-no primeiro erro.
+Foi implementada a importação de carteira CSV para os modelos da Fase 2, preservando
+valores de origem, número da linha e todos os problemas encontrados, sem interromper a
+análise do arquivo no primeiro erro.
 
 ### Funcionalidades incluídas
 
@@ -304,29 +304,36 @@ no primeiro erro.
 - dados de mercado, interface PySide6 ou persistência;
 - pandas como dependência obrigatória para um fluxo que a biblioteca padrão atende.
 
-### Arquivos inicialmente previstos
+### Arquivos entregues
 
 ```text
 src/zeus_risk/importers/__init__.py
 src/zeus_risk/importers/csv_portfolio.py
 src/zeus_risk/importers/models.py
+src/zeus_risk/exceptions/portfolio.py
 tests/unit/importers/test_csv_portfolio.py
+tests/unit/importers/test_models.py
 tests/integration/test_csv_portfolio_import.py
-tests/fixtures/portfolios/sample_portfolio.csv
+tests/fixtures/portfolios/valid_portfolio.csv
 assets/samples/portfolio.csv
 docs/models/csv-portfolio-format.md
 ```
 
-### Decisões a fechar na Fase 3
+### Decisões fechadas na Fase 3
 
-- codificações aceitas e comportamento de fallback;
-- delimitador explícito ou detecção controlada;
-- aliases permitidos para cabeçalhos;
-- política para coluna extra, linha vazia e setor ausente;
-- diferença entre linha inválida e arquivo estruturalmente inválido;
-- preservação segura dos valores originais em mensagens e logs.
+- UTF-8 e UTF-8 com BOM são aceitos, sem fallback silencioso de encoding;
+- delimitador pode ser explícito ou detectado entre vírgula, ponto e vírgula, tab e
+  barra vertical;
+- aliases em português e inglês são normalizados sem acentos;
+- coluna extra declarada é preservada com aviso, linha vazia é ignorada e setor ausente
+  gera aviso não fatal;
+- falha de arquivo/cabeçalho gera `PortfolioImportError`, enquanto falha recuperável
+  permanece no `ImportRow`;
+- valores originais são preservados no resultado, mas não devem ser copiados
+  indiscriminadamente para logs;
+- a primeira posição ticker/moeda é aceita e ocorrências posteriores são rejeitadas.
 
-### Critérios de saída previstos
+### Evidências de conclusão
 
 - um erro de linha não impede o relatório das demais;
 - posições válidas usam exatamente os modelos da Fase 2;
@@ -334,7 +341,9 @@ docs/models/csv-portfolio-format.md
 - ausência de coluna obrigatória falha com erro de importação específico;
 - nenhuma coerção silenciosa de números inválidos;
 - exemplo funciona offline e não contém dados confidenciais;
-- Ruff, mypy, testes, cobertura e build permanecem aprovados.
+- não foi adicionada dependência de runtime;
+- Ruff e mypy aprovados, 94 testes aprovados e cobertura total de 98%;
+- wheel e source distribution construídos, seguidos de smoke test do wheel.
 
 ### Testes previstos
 
@@ -350,6 +359,77 @@ docs/models/csv-portfolio-format.md
 
 ```text
 feat(import): add validated CSV portfolio importer
+```
+
+## Próxima etapa recomendada — Fase 4
+
+### Objetivo
+
+Importar carteiras XLSX reutilizando os contratos de coluna, linha, validação e resultado
+da Fase 3, com seleção explícita de planilha e sem executar conteúdo da pasta de
+trabalho.
+
+### Funcionalidades incluídas
+
+- leitura de arquivos `.xlsx`;
+- listagem e seleção de worksheet por nome;
+- primeira planilha como padrão somente quando a escolha for inequívoca e documentada;
+- reutilização de aliases, conversão decimal, domínio e status por linha;
+- preservação do nome da planilha e da linha de origem;
+- tratamento de células vazias, tipos numéricos e fórmulas;
+- testes com workbooks sintéticos pequenos.
+
+### Fora da Fase 4
+
+- `.xls` legado e `.xlsm` com macros;
+- edição ou recálculo de fórmulas;
+- mapeamento visual de colunas;
+- interface PySide6, drag-and-drop ou processamento assíncrono;
+- planilhas de mercado ou relatórios como entrada de posições.
+
+### Arquivos inicialmente previstos
+
+```text
+src/zeus_risk/importers/tabular.py
+src/zeus_risk/importers/xlsx_portfolio.py
+tests/unit/importers/test_xlsx_portfolio.py
+tests/integration/test_xlsx_portfolio_import.py
+tests/fixtures/portfolios/valid_portfolio.xlsx
+docs/models/xlsx-portfolio-format.md
+```
+
+### Decisões a fechar na Fase 4
+
+- biblioteca XLSX e faixa de versões suportada;
+- comportamento quando existem várias planilhas;
+- uso de valor calculado ou rejeição de células com fórmula;
+- conversão de datas e números fornecidos pelo workbook;
+- limite inicial de linhas/colunas para uso síncrono;
+- extração de lógica tabular compartilhada sem acoplar o domínio ao formato.
+
+### Critérios de saída previstos
+
+- CSV e XLSX produzem contratos equivalentes de revisão;
+- seleção inválida de planilha gera erro específico;
+- fórmulas e macros não são executadas;
+- tipos de célula não sofrem coerção silenciosa;
+- arquivos de teste são sintéticos e pequenos;
+- dependência nova é documentada e limitada ao adapter XLSX;
+- Ruff, mypy, testes, cobertura e build permanecem aprovados.
+
+### Testes previstos
+
+- workbook válido com uma e várias planilhas;
+- planilha selecionada por nome, ausente e vazia;
+- cabeçalhos, aliases e campos opcionais compartilhados com CSV;
+- números como texto e como célula numérica;
+- fórmulas, datas, booleanos e erros de célula;
+- arquivo corrompido, extensão incompatível e workbook protegido quando aplicável.
+
+### Commit sugerido para a Fase 4
+
+```text
+feat(import): add XLSX portfolio importer
 ```
 
 ## Template obrigatório para cada fase
