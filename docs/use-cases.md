@@ -115,7 +115,8 @@ entradas produz os mesmos problemas; cor não é o único indicador de severidad
 **Objetivo:** associar aos ativos séries históricas e metadados suficientes para
 reprodução.
 
-**Pré-condições:** carteira válida e fonte local configurada.
+**Pré-condições:** fonte local configurada. A associação com uma carteira será feita
+pelo caso de uso de análise.
 
 **Fluxo principal:**
 
@@ -127,11 +128,14 @@ reprodução.
    tratamento de ausências.
 6. O sistema retorna séries válidas e problemas encontrados.
 
-**Alternativas e falhas:** ativo ausente, histórico insuficiente, preço inválido,
-data duplicada ou lacuna geram erro ou aviso conforme o impacto no cálculo.
+**Alternativas e falhas:** arquivo ausente ou inválido, preço inválido e observação
+duplicada geram erros estruturados. Preço ausente é erro por padrão ou pode ser
+descartado com aviso pela política explícita `drop`. Linhas reordenadas e colunas extras
+geram avisos; lacunas entre séries permanecem visíveis após alinhamento por união.
 
-**Critérios de aceitação:** o núcleo recebe um contrato de série, não um widget ou
-caminho global; tratamento de missing values nunca é implícito.
+**Critérios de aceitação:** o núcleo recebe contratos imutáveis, não um widget ou
+caminho global; tratamento de missing values nunca é implícito; fonte, hash, intervalo,
+frequência e contagens permanecem auditáveis.
 
 ## UC-05 — Configurar uma análise
 

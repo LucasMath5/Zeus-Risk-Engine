@@ -68,11 +68,17 @@ forem a forma mais reconhecida no mercado.
 | **ImportRow** | Representação de uma linha importada com número físico, valores originais, status, problemas e posição opcional. |
 | **ImportStatus** | Estado `valid`, `warning` ou `error` atribuído a uma linha após parsing e validação. |
 | **Informação (`info`)** | Observação contextual que não indica degradação ou invalidade. |
-| **Metadados de mercado (`MarketDataMetadata`)** | Identificação de ativo, fonte, frequência, intervalo, obtenção, quantidade e tratamento das séries. |
+| **Metadados de mercado (`MarketDataMetadata`)** | Provider, fonte, hash, frequência, instante de carga, intervalo, contagens e tratamento de ausências de um conjunto de séries. |
 | **Missing value** | Observação ausente. Remoção, preenchimento ou alinhamento deve seguir uma política declarada e registrada. |
+| **Conjunto de dados de mercado (`MarketDataSet`)** | Coleção validada de séries com chaves únicas e metadados reconciliados de frequência, período e contagens. |
+| **Observação de preço (`PriceObservation`)** | Par imutável de data de calendário e preço `Decimal` finito e estritamente positivo. |
+| **Política de alinhamento (`AlignmentPolicy`)** | Regra explícita de interseção ou união das datas de várias séries; união preserva ausências como `None` e nenhuma opção preenche preços. |
+| **Política de valor ausente (`MissingValuePolicy`)** | Tratamento de preço ausente na entrada: erro por padrão ou descarte explícito com aviso. Não autoriza descartar preço inválido. |
 | **Problema de validação (`ValidationIssue`)** | Objeto com severidade, código, mensagem e, quando aplicável, campo, item e localização. |
 | **Reprodutibilidade** | Capacidade de obter o mesmo resultado com as mesmas entradas, configuração, versão e política numérica dentro de tolerância declarada. |
 | **Resultado estruturado** | Objeto tipado que reúne valores, unidade, parâmetros, metadados e problemas, em vez de um dicionário sem contrato. |
+| **Série de preços (`PriceSeries`)** | Sequência diária não vazia de observações para uma `PriceSeriesKey`, com datas únicas e crescentes. |
+| **Chave de série (`PriceSeriesKey`)** | Identidade normalizada `(ticker, currency)` de uma série de preços. |
 | **Schema version** | Identificador da estrutura de um arquivo ou mensagem persistida, usado para validar compatibilidade e migração. |
 | **Severidade** | Classificação `info`, `warning` ou `error` atribuída a um problema de validação. |
 | **Aviso (`warning`)** | Problema não fatal que pode reduzir qualidade ou interpretação e deve acompanhar o resultado. |
@@ -101,7 +107,8 @@ Antes da implementação correspondente, devem ser definidos e documentados:
 - convenção de sinal de perdas, VaR e Expected Shortfall;
 - método de quantil empírico;
 - estimador e fator de anualização da volatilidade;
-- calendário, timezone e alinhamento de datas;
-- política de missing values;
+- calendários, timezone de observações e alinhamentos além das políticas locais da
+  Fase 5;
+- política de missing values para cálculos que recebam a união de séries;
 - moeda-base e eventual conversão;
 - precisão, arredondamento de exibição e tolerâncias de teste.

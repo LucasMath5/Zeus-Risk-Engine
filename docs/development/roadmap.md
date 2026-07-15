@@ -21,7 +21,7 @@
 | 2 | domínio de carteira | Fase 1 | instrumentos, posições, carteira, validações, valor e pesos testados | concluída |
 | 3 | importação CSV | Fase 2 | normalização, parsing, problemas por linha e fixture de exemplo | concluída |
 | 4 | importação XLSX | Fase 3 | seleção de planilha e mapeamento integrados à mesma validação | concluída |
-| 5 | dados de mercado locais | Fases 2–3 | port, provider CSV, séries, metadados, alinhamento e cache testados | planejada |
+| 5 | dados de mercado locais | Fases 2–3 | port, provider CSV, séries, metadados, alinhamento e cache testados | concluída |
 | 6 | analytics básicos | Fases 2 e 5 | retornos, volatilidade, correlação, drawdown e concentração documentados | planejada |
 | 7 | VaR histórico | Fase 6 | configuração, convenção, quantil, resultado e testes numéricos | planejada |
 | 8 | Expected Shortfall | Fase 7 | cauda, comparação com VaR, documentação e testes | planejada |
@@ -437,25 +437,27 @@ pyproject.toml
 feat(import): add XLSX portfolio importer
 ```
 
-## Próxima etapa recomendada — Fase 5
+## Fase 5 — Dados de mercado locais concluída
 
 ### Objetivo
 
-Modelar séries de preços e metadados de mercado, definir um port pequeno de provider e
-entregar uma implementação local por CSV com alinhamento, política explícita de valores
-ausentes e cache reproduzível.
+Foi modelado um pipeline offline de preços históricos que separa contratos de domínio,
+leitura CSV, alinhamento e cache. A entrega preserva proveniência e problemas
+estruturados sem antecipar cálculos quantitativos.
 
-### Funcionalidades inicialmente previstas
+### Funcionalidades incluídas
 
-- `PriceObservation`, `PriceSeries` e `MarketDataMetadata` imutáveis;
-- frequência diária e datas estritamente ordenadas;
-- `MarketDataProvider` como `Protocol` orientado ao caso de uso;
-- provider CSV local sem rede;
-- leitura de uma ou várias séries em contrato documentado;
-- detecção de datas, preços e duplicidades inválidas;
-- alinhamento por interseção ou união segundo política explícita;
-- cache local identificável sem ocultar a fonte original;
-- fixtures sintéticas e testes numéricos simples.
+- `PriceSeriesKey`, `PriceObservation`, `PriceSeries`, `MarketDataMetadata`,
+  `MarketDataSet` e resultados imutáveis;
+- frequência diária, preços `Decimal` positivos, datas únicas e crescentes;
+- `MarketDataProvider` como `Protocol` orientado ao consumidor;
+- provider CSV longo, UTF-8, local e protegido por limites de arquivo e linhas;
+- aliases de cabeçalho em português e inglês e múltiplas séries por arquivo;
+- problemas por linha com códigos estáveis e acumulação de erros independentes;
+- política de preço ausente `error` ou `drop`, sempre registrada nos metadados;
+- alinhamento determinístico por interseção ou união, sem preenchimento implícito;
+- cache JSON schema 1, endereçado por SHA-256 e gravado atomicamente;
+- exemplo e fixtures sintéticos, testes unitários e integração de ponta a ponta.
 
 ### Fora da Fase 5
 
@@ -465,7 +467,7 @@ ausentes e cache reproduzível.
 - banco de dados, UI ou processamento assíncrono;
 - calendários de bolsa completos e preenchimento estatístico avançado.
 
-### Arquivos inicialmente previstos
+### Arquivos entregues
 
 ```text
 src/zeus_risk/domain/market_data.py
@@ -475,37 +477,128 @@ src/zeus_risk/market_data/csv_provider.py
 src/zeus_risk/market_data/alignment.py
 src/zeus_risk/market_data/cache.py
 tests/unit/domain/test_market_data.py
+tests/unit/exceptions/test_market_data_error.py
 tests/unit/market_data/
-tests/integration/test_csv_market_data_provider.py
+tests/integration/test_local_market_data_pipeline.py
 tests/fixtures/market_data/
+assets/samples/market_prices.csv
 docs/models/market-data.md
 ```
 
-### Decisões a fechar na Fase 5
+### Decisões fechadas na Fase 5
 
-- representação de data e frequência;
-- contrato CSV longo ou largo e aliases de cabeçalho;
-- política inicial de preços ausentes;
-- semântica de interseção e união no alinhamento;
-- validade, chave e conteúdo do cache;
-- tratamento de preço zero, negativo, `NaN` e infinito;
-- limites de tamanho para operação síncrona.
+- datas usam `datetime.date`, cargas usam `datetime` com timezone e a frequência inicial
+  é somente diária;
+- o CSV usa formato longo com `ticker,date,price,currency`, aliases controlados e ponto
+  como separador decimal;
+- `(ticker, currency)` identifica uma série e duplicar essa chave na mesma data é erro;
+- preço deve ser `Decimal`, finito e estritamente positivo;
+- preço ausente é erro por padrão; `drop` descarta apenas ausência e produz aviso;
+- interseção mantém datas comuns; união mantém todas e usa `None`, sem preencher;
+- SHA-256 dos bytes originais identifica conteúdo e chaveia o cache JSON schema 1;
+- o cache preserva a fonte e reaplica todas as invariantes na leitura;
+- os limites padrão síncronos são 25 MiB e 250.000 linhas.
 
-### Critérios de saída previstos
+### Evidências de conclusão
 
 - domínio de mercado importa sem pandas, Qt ou provider concreto;
 - provider local nunca acessa a rede;
-- metadados identificam fonte, período, frequência e observações;
+- metadados identificam provider, fonte, hash, período, frequência, observações, séries e
+  política de ausência;
 - datas e preços inválidos produzem códigos estáveis;
 - alinhamento é determinístico e preserva a política utilizada;
 - cache não perde a referência à fonte nem altera silenciosamente os dados;
-- testes reconciliam séries sintéticas manualmente verificáveis;
-- Ruff, mypy, testes, cobertura e build permanecem aprovados.
+- testes reconciliam o CSV sintético, alinhamento e round trip do cache;
+- Ruff e formatação aprovados, mypy estrito aprovado em 44 arquivos;
+- 171 testes aprovados com cobertura total de 94%;
+- 16 documentos Markdown válidos em UTF-8 e nenhum link interno quebrado;
+- wheel e source distribution construídos, seguidos de instalação do wheel e smoke
+  test de carga, alinhamento e cache.
+
+### Testes entregues
+
+- invariantes de chaves, observações, séries, metadados, conjunto e resultado;
+- aliases, BOM, delimitadores, linhas fora de ordem e colunas extras;
+- arquivo ausente, vazio, grande, malformado e com encoding inválido;
+- datas, moedas, preços, campos e duplicidades inválidos;
+- políticas `error` e `drop` para preço ausente;
+- interseção, união, ausência de datas comuns e entradas incompatíveis;
+- round trip do cache e rejeição de chave, encoding, JSON, schema e conteúdo inválidos;
+- pipeline local completo sobre fixture e exemplo versionado.
 
 ### Commit sugerido para a Fase 5
 
 ```text
 feat(market-data): add local price series provider
+```
+
+## Próxima etapa recomendada — Fase 6
+
+### Objetivo
+
+Entregar analytics descritivos puros sobre séries validadas e alinhadas, com fórmulas,
+convenções, metadados de resultado e casos de regressão numérica documentados.
+
+### Funcionalidades inicialmente previstas
+
+- retornos simples e logarítmicos por série;
+- retorno de carteira com convenção explícita de pesos e rebalanceamento;
+- média, variância, volatilidade, covariância e correlação;
+- anualização diária com fator efetivo registrado;
+- trajetória acumulada, drawdown e maximum drawdown;
+- concentração por peso, incluindo índice Herfindahl quando aplicável;
+- objetos imutáveis de configuração e resultado;
+- erros quantitativos específicos para amostra insuficiente ou resultado indefinido;
+- documentação matemática e testes manualmente reconciliáveis.
+
+### Fora da Fase 6
+
+- VaR e Expected Shortfall, reservados às Fases 7 e 8;
+- estimação paramétrica normal, EWMA, Monte Carlo e backtesting;
+- otimização de carteira, atribuição completa ou contribuição de risco;
+- conversão cambial e aquisição de novos dados;
+- interface PySide6, persistência ou relatórios.
+
+### Decisões a fechar antes da implementação
+
+- representação numérica interna dos cálculos estatísticos e tolerâncias;
+- retorno simples ou logarítmico padrão, sem remover a alternativa;
+- estimador amostral ou populacional e graus de liberdade;
+- fator de anualização e distinção entre frequência e calendário;
+- pesos constantes, rebalanceamento e relação com posições vendidas;
+- tratamento de `None` após alinhamento por união;
+- definição da trajetória base para drawdown e do índice de concentração.
+
+### Arquivos inicialmente previstos
+
+```text
+src/zeus_risk/core/analytics/__init__.py
+src/zeus_risk/core/analytics/returns.py
+src/zeus_risk/core/analytics/statistics.py
+src/zeus_risk/core/analytics/drawdown.py
+src/zeus_risk/core/analytics/concentration.py
+src/zeus_risk/domain/analytics.py
+src/zeus_risk/exceptions/analytics.py
+tests/unit/core/analytics/
+tests/integration/test_basic_analytics_pipeline.py
+tests/regression/test_basic_analytics_reference.py
+docs/concepts/basic-analytics.md
+```
+
+### Critérios de saída previstos
+
+- fórmulas e convenções são documentadas antes ou junto do código;
+- funções quantitativas não importam arquivo, cache, Qt ou provider;
+- entradas inválidas nunca retornam `NaN` ou infinito como sucesso;
+- resultados informam método, frequência, amostra e anualização efetivos;
+- exemplos pequenos reconciliam manualmente retornos, volatilidade e drawdown;
+- covariância e correlação respeitam simetria e casos indefinidos explícitos;
+- Ruff, mypy, testes, cobertura, build e smoke test permanecem aprovados.
+
+### Commit sugerido para a Fase 6
+
+```text
+feat(analytics): add portfolio descriptive analytics
 ```
 
 ## Template obrigatório para cada fase

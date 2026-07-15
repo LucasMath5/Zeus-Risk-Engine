@@ -3,8 +3,8 @@
 ## Estado
 
 - **Versão do documento:** 0.1
-- **Data:** 2026-07-13
-- **Estado:** arquitetura inicial proposta para evolução incremental
+- **Data:** 2026-07-15
+- **Estado:** arquitetura incremental atualizada até a Fase 5
 - **Escopo:** limites, responsabilidades, dependências e estrutura-alvo
 
 ## Objetivos arquiteturais
@@ -118,10 +118,16 @@ invariantes de posição continuam no domínio e são reutilizadas pelos dois fo
 
 ### Dados de mercado
 
-Um `MarketDataProvider` será um `Protocol` ou ABC pequeno, definido a partir das
-necessidades do caso de uso. Ele retorna `PriceSeries` e `MarketDataMetadata` ou
-uma falha específica. Providers locais, de demonstração, de cache e APIs futuras
-podem cumprir o mesmo contrato.
+A Fase 5 entrega `PriceSeriesKey`, `PriceObservation`, `PriceSeries`,
+`MarketDataMetadata` e `MarketDataSet` no domínio, sem dependência do formato de
+entrada. `MarketDataProvider` é um `Protocol` pequeno que retorna
+`MarketDataLoadResult` ou uma `MarketDataError` estruturada.
+
+O primeiro adapter lê CSV longo local, atribui SHA-256 à fonte e não acessa a rede.
+O alinhamento por interseção ou união é uma operação separada e nunca preenche preços.
+O cache JSON é versionado, endereçado pelo hash da fonte, gravado atomicamente e
+revalida o domínio ao ler. Providers futuros podem cumprir o mesmo port sem alterar o
+core. O contrato detalhado está em [dados de mercado locais](../models/market-data.md).
 
 ### Analytics e risco
 
@@ -159,23 +165,26 @@ registrada no [ADR-002](../decisions/ADR-002-use-of-pyside6.md).
 9. A apresentação renderiza; exporters e repositories recebem o mesmo resultado
    estruturado sem recalculá-lo.
 
-## Contratos de dados planejados
+## Contratos de dados
 
 | Contrato | Papel |
 |---|---|
 | `Instrument` | identidade e classificações do instrumento |
 | `Position` | instrumento, quantidade e preço de referência |
 | `Portfolio` | conjunto validado de posições e metadados da carteira |
-| `PriceSeries` | observações temporais de um ativo com invariantes conhecidas |
-| `MarketDataMetadata` | origem, frequência, intervalo e tratamento dos dados |
+| `PriceSeries` | observações diárias ordenadas para uma chave `(ticker, currency)` |
+| `MarketDataMetadata` | provider, fonte, hash, frequência, intervalo, contagens e política de ausência |
+| `MarketDataSet` | séries únicas reconciliadas com os metadados da carga |
+| `MarketDataLoadResult` | conjunto válido e avisos não fatais produzidos pelo provider |
 | `RiskConfiguration` | parâmetros validados e compatíveis com um schema |
 | `ValidationIssue` | severidade, código, mensagem e localização de um problema |
 | `ImportResult` | linhas/posições, problemas e resumo da importação |
 | `RiskResult` | métrica, valor, unidade, modelo, parâmetros e problemas |
 | `ExecutionRecord` | evidência reproduzível de uma execução futura |
 
-Os contratos de carteira foram concretizados na Fase 2; os demais continuam como
-vocabulário inicial e só devem incluir campos usados por casos de uso reais.
+Os contratos de carteira foram concretizados na Fase 2 e os de mercado na Fase 5. Os
+demais continuam como vocabulário inicial e só devem incluir campos usados por casos
+de uso reais.
 
 ## Validação e tratamento de falhas
 
@@ -189,7 +198,7 @@ recuperáveis são representados por `ValidationIssue` com:
 - contexto técnico opcional que não exponha informação sensível.
 
 Exceções específicas representam operações que não puderam produzir seu
-contrato, como `PortfolioImportError`, `InsufficientDataError` ou
+contrato, como `PortfolioImportError`, `MarketDataError`, `InsufficientDataError` ou
 `RiskCalculationError`. As fronteiras traduzem exceções sem apagar causa e
 registram diagnóstico. Não haverá `except Exception` silencioso.
 
@@ -213,8 +222,8 @@ o mesmo caso de uso em CLI ou teste.
 - **Fase inicial:** arquivos locais e objetos em memória.
 - **Configurações:** JSON com `schema_version`, validação e migrações explícitas
   quando necessário.
-- **Cache de mercado:** conteúdo endereçável por fonte, ativo, intervalo e
-  política; metadados preservam obtenção e integridade.
+- **Cache de mercado:** JSON schema 1 endereçado pelo SHA-256 dos bytes da fonte;
+  metadados, séries, política e avisos são preservados e revalidados na leitura.
 - **Persistência posterior:** SQLite atrás de repositories, com transações e
   migrações versionadas.
 - **Execuções:** registro futuro inclui versão, data, carteira, fonte, intervalo,
@@ -294,6 +303,7 @@ zeus-risk-engine/
 │   ├── development/
 │   │   └── roadmap.md
 │   ├── models/
+│   │   ├── market-data.md
 │   │   └── portfolio-domain.md
 │   ├── tutorials/             # fluxos executáveis quando existirem
 │   ├── glossary.md
@@ -319,6 +329,7 @@ zeus-risk-engine/
 │       │   └── stress/
 │       ├── domain/
 │       ├── exceptions/
+│       │   ├── market_data.py
 │       │   └── portfolio.py
 │       ├── exporters/
 │       ├── importers/
@@ -328,6 +339,10 @@ zeus-risk-engine/
 │       │   └── xlsx_portfolio.py
 │       ├── infrastructure/
 │       ├── market_data/
+│       │   ├── alignment.py
+│       │   ├── cache.py
+│       │   ├── csv_provider.py
+│       │   └── provider.py
 │       └── repositories/
 ├── tests/
 │   ├── fixtures/
@@ -346,16 +361,17 @@ zeus-risk-engine/
 
 ### Política de criação incremental
 
-Até a Fase 4 foram criados a fundação executável, o domínio de carteira e os adapters
-CSV/XLSX com validação tabular compartilhada. Cada subpacote de `core`, adapter, pasta
-de teste ou asset futuro só será criado com seu primeiro conteúdo real. Isso evita
-estrutura ornamental e torna cada mudança explicável.
+Até a Fase 5 foram criados a fundação executável, o domínio de carteira e mercado, os
+adapters de carteira CSV/XLSX e o pipeline local de preços. Cada subpacote de `core`,
+adapter, pasta de teste ou asset futuro só será criado com seu primeiro conteúdo real.
+Isso evita estrutura ornamental e torna cada mudança explicável.
 
 ## Decisões ainda necessárias
 
 - ADR sobre conversão para moeda-base e fontes de câmbio;
 - ADR sobre convenção de sinal de VaR e Expected Shortfall;
-- ADR sobre política de datas e missing values;
+- ADR sobre calendários e políticas de missing values além das opções locais já
+  fechadas na Fase 5;
 - ADR sobre persistência SQLite e migrações;
 - decisão sobre o primeiro formato de exportação;
 - decisão sobre ambientes desktop oficialmente suportados.

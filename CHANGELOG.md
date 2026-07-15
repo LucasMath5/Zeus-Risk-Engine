@@ -27,9 +27,18 @@ and the project intends to follow [Semantic Versioning](https://semver.org/spec/
 - Shared tabular validation for CSV/XLSX, formula and cell-type rejection, archive
   safeguards, source provenance, and partial results.
 - XLSX format documentation and synthetic workbook tests generated at test time.
+- Immutable daily price observations, series, keys, source metadata, load results, and
+  structured market-data failures.
+- Offline long-format CSV market-data provider with Portuguese/English aliases,
+  resource limits, content hashing, and explicit missing-price policy.
+- Deterministic intersection and union alignment without implicit filling.
+- Schema-versioned JSON market-data cache with atomic writes and full domain
+  revalidation on load.
+- Synthetic local price sample, format documentation, and unit/integration coverage for
+  provider, alignment, cache, and domain invariants.
 
 ### Notes
 
 - Version `0.1.0` identifies the current pre-alpha codebase; no release tag has been
   published yet.
-- Market-data, risk-model, and graphical-interface behavior are not implemented yet.
+- Risk-model and graphical-interface behavior are not implemented yet.
