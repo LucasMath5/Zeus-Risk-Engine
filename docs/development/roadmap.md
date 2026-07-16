@@ -22,7 +22,7 @@
 | 3 | importação CSV | Fase 2 | normalização, parsing, problemas por linha e fixture de exemplo | concluída |
 | 4 | importação XLSX | Fase 3 | seleção de planilha e mapeamento integrados à mesma validação | concluída |
 | 5 | dados de mercado locais | Fases 2–3 | port, provider CSV, séries, metadados, alinhamento e cache testados | concluída |
-| 6 | analytics básicos | Fases 2 e 5 | retornos, volatilidade, correlação, drawdown e concentração documentados | planejada |
+| 6 | analytics básicos | Fases 2 e 5 | retornos, volatilidade, correlação, drawdown e concentração documentados | concluída |
 | 7 | VaR histórico | Fase 6 | configuração, convenção, quantil, resultado e testes numéricos | planejada |
 | 8 | Expected Shortfall | Fase 7 | cauda, comparação com VaR, documentação e testes | planejada |
 | 9 | interface inicial | Fases 3 e 6–8 | importação, validação, posições e resultados em PySide6 | planejada |
@@ -532,14 +532,15 @@ docs/models/market-data.md
 feat(market-data): add local price series provider
 ```
 
-## Próxima etapa recomendada — Fase 6
+## Fase 6 — Analytics básicos concluída
 
 ### Objetivo
 
-Entregar analytics descritivos puros sobre séries validadas e alinhadas, com fórmulas,
-convenções, metadados de resultado e casos de regressão numérica documentados.
+Foi entregue o primeiro núcleo quantitativo puro sobre séries validadas e alinhadas,
+com fórmulas, convenções, resultados imutáveis e casos de regressão numérica
+documentados.
 
-### Funcionalidades inicialmente previstas
+### Funcionalidades incluídas
 
 - retornos simples e logarítmicos por série;
 - retorno de carteira com convenção explícita de pesos e rebalanceamento;
@@ -559,20 +560,27 @@ convenções, metadados de resultado e casos de regressão numérica documentado
 - conversão cambial e aquisição de novos dados;
 - interface PySide6, persistência ou relatórios.
 
-### Decisões a fechar antes da implementação
+### Decisões fechadas na Fase 6
 
-- representação numérica interna dos cálculos estatísticos e tolerâncias;
-- retorno simples ou logarítmico padrão, sem remover a alternativa;
-- estimador amostral ou populacional e graus de liberdade;
-- fator de anualização e distinção entre frequência e calendário;
-- pesos constantes, rebalanceamento e relação com posições vendidas;
-- tratamento de `None` após alinhamento por união;
-- definição da trajetória base para drawdown e do índice de concentração.
+- `Decimal` com contexto local de 34 dígitos e `ROUND_HALF_EVEN`, sem mutar o contexto
+  global;
+- retorno simples e logarítmico são opções explícitas, sem conversão silenciosa;
+- agregação de retornos log de carteira passa pelo retorno simples ponderado antes de
+  aplicar `ln`;
+- variância amostral com `n - 1` é padrão e a populacional com `n` é suportada;
+- anualização diária usa fator explícito, padrão 252, e não representa calendário;
+- retorno de carteira usa pesos líquidos assinados e constantes da fotografia,
+  equivalente a rebalanceamento por período;
+- `None` alinhado é rejeitado; nenhuma observação é preenchida ou removida no core;
+- drawdown é não positivo e maximum drawdown é magnitude positiva;
+- HHI usa pesos brutos e posições efetivas são calculadas por `1 / HHI`;
+- correlação com variância zero gera falha estruturada, nunca `NaN`.
 
-### Arquivos inicialmente previstos
+### Arquivos entregues
 
 ```text
 src/zeus_risk/core/analytics/__init__.py
+src/zeus_risk/core/analytics/_decimal.py
 src/zeus_risk/core/analytics/returns.py
 src/zeus_risk/core/analytics/statistics.py
 src/zeus_risk/core/analytics/drawdown.py
@@ -585,7 +593,7 @@ tests/regression/test_basic_analytics_reference.py
 docs/concepts/basic-analytics.md
 ```
 
-### Critérios de saída previstos
+### Evidências de conclusão
 
 - fórmulas e convenções são documentadas antes ou junto do código;
 - funções quantitativas não importam arquivo, cache, Qt ou provider;
@@ -593,12 +601,101 @@ docs/concepts/basic-analytics.md
 - resultados informam método, frequência, amostra e anualização efetivos;
 - exemplos pequenos reconciliam manualmente retornos, volatilidade e drawdown;
 - covariância e correlação respeitam simetria e casos indefinidos explícitos;
-- Ruff, mypy, testes, cobertura, build e smoke test permanecem aprovados.
+- pipeline de integração percorre provider CSV, alinhamento, retornos, carteira,
+  estatísticas, matrizes, drawdown e concentração;
+- regressão preserva preços e resultados manualmente reconciliáveis;
+- Ruff e formatação aprovados; mypy estrito aprovado em 61 arquivos;
+- 209 testes aprovados com cobertura total de 91%;
+- 17 documentos Markdown válidos em UTF-8 e nenhum link interno quebrado;
+- wheel e source distribution construídos, seguidos de instalação do wheel e smoke
+  test do pipeline quantitativo.
+
+### Testes entregues
+
+- retornos simples, logarítmicos e identidade temporal do log;
+- tabelas completas, preços ausentes, séries incompatíveis e moedas diferentes;
+- carteiras long-only, long/short, neutras e crescimento alavancado não positivo;
+- agregação log de carteira pela fórmula correta;
+- média, variância amostral/populacional, volatilidade e anualização;
+- covariância/correlação simétricas, relação positiva/negativa e série constante;
+- riqueza acumulada, pico, vale, recuperação e equivalência simples/log;
+- HHI para pesos iguais, posições vendidas e carteiras multimoeda;
+- contratos imutáveis, códigos de erro e regressão numérica manual.
 
 ### Commit sugerido para a Fase 6
 
 ```text
 feat(analytics): add portfolio descriptive analytics
+```
+
+## Próxima etapa recomendada — Fase 7
+
+### Objetivo
+
+Implementar Value at Risk histórico sobre séries de retorno validadas, com configuração
+imutável, convenção positiva de perda, quantil empírico documentado e resultados
+reconciliáveis.
+
+### Funcionalidades inicialmente previstas
+
+- `HistoricalVaRConfiguration` com confiança, horizonte, janela e método de quantil;
+- transformação explícita de retorno ou P&L em perda;
+- seleção determinística da janela histórica;
+- VaR relativo como magnitude positiva de perda;
+- resultado estruturado com confiança, horizonte, amostra, método e datas;
+- conversão monetária opcional apenas para carteira e moeda únicas, se a convenção for
+  fechada sem conversão cambial;
+- falhas específicas para confiança, janela, amostra, quantil e escala inválidos;
+- documentação matemática, exemplo manual e regressão numérica.
+
+### Fora da Fase 7
+
+- Expected Shortfall, reservado à Fase 8;
+- VaR paramétrico normal, EWMA e Monte Carlo;
+- backtesting, exceções e testes de cobertura;
+- conversão cambial e agregação de carteiras multimoeda;
+- interface PySide6, persistência, processamento assíncrono ou relatórios.
+
+### Decisões a fechar antes da implementação
+
+- definição exata do quantil empírico e eventual interpolação;
+- convenção `perda = -retorno` e apresentação positiva do VaR;
+- uso inicial de retorno simples ou preservação do método presente na série;
+- horizonte por retornos históricos agregados ou regra de escala explicitamente
+  limitada;
+- janela mínima por nível de confiança e tratamento de cauda sem observação suficiente;
+- VaR relativo apenas ou também monetário sobre valor líquido/bruto;
+- data de referência, unidade e metadados obrigatórios no resultado.
+
+### Arquivos inicialmente previstos
+
+```text
+src/zeus_risk/core/risk/__init__.py
+src/zeus_risk/core/risk/historical_var.py
+src/zeus_risk/domain/risk.py
+src/zeus_risk/exceptions/risk.py
+tests/unit/core/risk/test_historical_var.py
+tests/unit/domain/test_risk.py
+tests/integration/test_historical_var_pipeline.py
+tests/regression/test_historical_var_reference.py
+docs/concepts/historical-var.md
+docs/decisions/ADR-004-historical-var-conventions.md
+```
+
+### Critérios de saída previstos
+
+- fórmula, sinal de perda e quantil estão documentados antes ou junto do código;
+- a mesma amostra e configuração produzem resultado determinístico;
+- confiança, horizonte, janela, método, amostra e datas acompanham o resultado;
+- amostra insuficiente não retorna zero, `NaN` ou um quantil inventado;
+- casos pequenos reconciliam ordenação das perdas e quantil manualmente;
+- o cálculo não importa arquivo, provider, cache, Qt ou Expected Shortfall;
+- Ruff, mypy, testes, cobertura, build e smoke test permanecem aprovados.
+
+### Commit sugerido para a Fase 7
+
+```text
+feat(risk): add historical value at risk
 ```
 
 ## Template obrigatório para cada fase

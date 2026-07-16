@@ -168,17 +168,22 @@ financeira própria.
 **Fluxo principal:**
 
 1. O sistema calcula valores de mercado e pesos.
-2. Calcula a série de retornos da carteira conforme o método configurado.
-3. Calcula volatilidade, drawdown e maximum drawdown.
-4. Produz objetos de resultado com valor, unidade, período, parâmetros e avisos.
-5. A interface apresenta a síntese sem recalcular as métricas.
+2. Calcula retornos simples ou logarítmicos sobre preços completamente alinhados.
+3. Calcula a série da carteira com pesos líquidos constantes e moeda única.
+4. Calcula média, variância, volatilidade, covariância, correlação, trajetória
+   acumulada, drawdown, maximum drawdown e concentração bruta.
+5. Produz objetos de resultado com método, frequência, estimador, amostra,
+   anualização, datas ou pesos aplicáveis.
+6. A interface futura apresenta a síntese sem recalcular as métricas.
 
-**Alternativas e falhas:** denominador inválido, série constante, observações
-insuficientes ou valores não finitos geram falha de domínio específica ou aviso
-documentado.
+**Alternativas e falhas:** denominador líquido zero, moedas ou séries incompatíveis,
+preço alinhado ausente, correlação de série constante, observações insuficientes,
+crescimento não positivo ou valores não finitos geram falha estruturada; nenhum deles
+retorna `NaN` como sucesso.
 
-**Critérios de aceitação:** pesos reconciliam com a convenção definida; resultados
-de referência respeitam tolerâncias explícitas; não há dependência de PySide6.
+**Critérios de aceitação:** pesos e matrizes reconciliam com as convenções definidas;
+resultados de referência respeitam tolerâncias explícitas; estimador e anualização
+ficam visíveis; não há dependência de arquivo, provider ou PySide6 no core.
 
 ## UC-07 — Executar risco histórico
 

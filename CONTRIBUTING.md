@@ -14,6 +14,7 @@ Read the following documents first:
 - [Scope](docs/scope.md)
 - [Architecture overview](docs/architecture/overview.md)
 - [Development roadmap](docs/development/roadmap.md)
+- [Basic analytics formulas and conventions](docs/concepts/basic-analytics.md)
 - [ADR-001: separation of UI and core](docs/decisions/ADR-001-separation-of-ui-and-core.md)
 
 Do not implement a later phase merely because it is listed in the roadmap. Each

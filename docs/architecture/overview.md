@@ -4,7 +4,7 @@
 
 - **Versão do documento:** 0.1
 - **Data:** 2026-07-15
-- **Estado:** arquitetura incremental atualizada até a Fase 5
+- **Estado:** arquitetura incremental atualizada até a Fase 6
 - **Escopo:** limites, responsabilidades, dependências e estrutura-alvo
 
 ## Objetivos arquiteturais
@@ -131,10 +131,16 @@ core. O contrato detalhado está em [dados de mercado locais](../models/market-d
 
 ### Analytics e risco
 
-Funções ou serviços puros recebem objetos validados e devolvem resultados
-tipados. Cada modelo documenta fórmula, parâmetros, hipóteses, interpretação,
-limitações, casos-limite e estratégia de teste. Uma interface comum de modelos só
-será extraída quando ao menos dois modelos reais demonstrarem a abstração.
+A Fase 6 entrega funções puras em `core.analytics` para retornos, estatísticas,
+matrizes, drawdown e concentração. Elas recebem `PriceSeries`, `AlignedPriceTable`,
+`ReturnSeries`, `ReturnTable` ou `Portfolio` validados e devolvem contratos imutáveis.
+O contexto `Decimal` local tem 34 dígitos e não altera configuração global.
+
+O core não lê arquivos, providers ou cache e não conhece Qt. Falhas quantitativas
+esperadas usam `AnalyticsError` com códigos estruturados. Fórmulas, estimadores,
+hipóteses e tolerâncias estão em
+[analytics básicos](../concepts/basic-analytics.md). Uma interface comum de modelos de
+risco só será extraída quando ao menos dois modelos reais demonstrarem a abstração.
 
 ### Aplicação
 
@@ -176,15 +182,20 @@ registrada no [ADR-002](../decisions/ADR-002-use-of-pyside6.md).
 | `MarketDataMetadata` | provider, fonte, hash, frequência, intervalo, contagens e política de ausência |
 | `MarketDataSet` | séries únicas reconciliadas com os metadados da carga |
 | `MarketDataLoadResult` | conjunto válido e avisos não fatais produzidos pelo provider |
+| `ReturnSeries` / `ReturnTable` | retornos finitos com método, frequência, datas e chaves preservados |
+| `DescriptiveStatistics` | média, variância, volatilidade e anualização efetiva |
+| `StatisticMatrix` | covariância ou correlação quadrada, simétrica e identificada |
+| `DrawdownResult` | riqueza acumulada, drawdowns e episódio máximo |
+| `ConcentrationResult` | pesos brutos, HHI e quantidade efetiva de posições |
 | `RiskConfiguration` | parâmetros validados e compatíveis com um schema |
 | `ValidationIssue` | severidade, código, mensagem e localização de um problema |
 | `ImportResult` | linhas/posições, problemas e resumo da importação |
 | `RiskResult` | métrica, valor, unidade, modelo, parâmetros e problemas |
 | `ExecutionRecord` | evidência reproduzível de uma execução futura |
 
-Os contratos de carteira foram concretizados na Fase 2 e os de mercado na Fase 5. Os
-demais continuam como vocabulário inicial e só devem incluir campos usados por casos
-de uso reais.
+Os contratos de carteira foram concretizados na Fase 2, os de mercado na Fase 5 e os
+analytics descritivos na Fase 6. Os demais continuam como vocabulário inicial e só
+devem incluir campos usados por casos de uso reais.
 
 ## Validação e tratamento de falhas
 
@@ -296,6 +307,7 @@ zeus-risk-engine/
 │   ├── architecture/
 │   │   └── overview.md
 │   ├── concepts/              # fórmulas e interpretação, a partir da Fase 6
+│   │   └── basic-analytics.md
 │   ├── decisions/
 │   │   ├── ADR-001-separation-of-ui-and-core.md
 │   │   ├── ADR-002-use-of-pyside6.md
@@ -323,12 +335,18 @@ zeus-risk-engine/
 │       ├── config/
 │       ├── core/
 │       │   ├── analytics/
+│       │   │   ├── concentration.py
+│       │   │   ├── drawdown.py
+│       │   │   ├── returns.py
+│       │   │   └── statistics.py
 │       │   ├── backtesting/
 │       │   ├── portfolio/
 │       │   ├── risk/
 │       │   └── stress/
 │       ├── domain/
+│       │   └── analytics.py
 │       ├── exceptions/
+│       │   ├── analytics.py
 │       │   ├── market_data.py
 │       │   └── portfolio.py
 │       ├── exporters/
@@ -361,10 +379,11 @@ zeus-risk-engine/
 
 ### Política de criação incremental
 
-Até a Fase 5 foram criados a fundação executável, o domínio de carteira e mercado, os
-adapters de carteira CSV/XLSX e o pipeline local de preços. Cada subpacote de `core`,
-adapter, pasta de teste ou asset futuro só será criado com seu primeiro conteúdo real.
-Isso evita estrutura ornamental e torna cada mudança explicável.
+Até a Fase 6 foram criados a fundação executável, os domínios de carteira, mercado e
+analytics, os adapters CSV/XLSX, o pipeline local de preços e o primeiro núcleo
+quantitativo. Cada subpacote, adapter, pasta de teste ou asset futuro só será criado com
+seu primeiro conteúdo real. Isso evita estrutura ornamental e torna cada mudança
+explicável.
 
 ## Decisões ainda necessárias
 

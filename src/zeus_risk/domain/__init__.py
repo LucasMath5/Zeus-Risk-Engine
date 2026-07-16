@@ -1,5 +1,19 @@
 """Public portfolio-domain models and validation contracts."""
 
+from zeus_risk.domain.analytics import (
+    ConcentrationResult,
+    DescriptiveStatistics,
+    DrawdownObservation,
+    DrawdownResult,
+    MatrixKind,
+    ReturnMethod,
+    ReturnObservation,
+    ReturnRow,
+    ReturnSeries,
+    ReturnTable,
+    StatisticMatrix,
+    VarianceEstimator,
+)
 from zeus_risk.domain.currency import Currency
 from zeus_risk.domain.enums import AssetClass, WeightBasis
 from zeus_risk.domain.instrument import Instrument
@@ -24,14 +38,19 @@ from zeus_risk.domain.validation import (
 
 __all__ = [
     "AssetClass",
+    "ConcentrationResult",
     "Currency",
+    "DescriptiveStatistics",
     "DomainValidationError",
+    "DrawdownObservation",
+    "DrawdownResult",
     "DataFrequency",
     "Instrument",
     "MarketDataIssue",
     "MarketDataLoadResult",
     "MarketDataMetadata",
     "MarketDataSet",
+    "MatrixKind",
     "MissingValuePolicy",
     "Portfolio",
     "PortfolioValuation",
@@ -40,7 +59,14 @@ __all__ = [
     "PriceObservation",
     "PriceSeries",
     "PriceSeriesKey",
+    "ReturnMethod",
+    "ReturnObservation",
+    "ReturnRow",
+    "ReturnSeries",
+    "ReturnTable",
+    "StatisticMatrix",
     "ValidationIssue",
     "ValidationSeverity",
+    "VarianceEstimator",
     "WeightBasis",
 ]

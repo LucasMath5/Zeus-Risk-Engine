@@ -12,10 +12,10 @@ analyzing, and monitoring the risk of financial portfolios. It is designed as a
 professional software-engineering and quantitative-finance portfolio project, with
 an emphasis on reproducibility, auditability, clear assumptions, and learning.
 
-**Current status:** Phase 5 — local market data. The package reads validated portfolio
-files and daily price series from local CSV, preserves provenance and structured
-problems, aligns series by an explicit policy, and supports a versioned JSON cache.
-Risk calculations are not yet implemented.
+**Current status:** Phase 6 — basic analytics. The package reads validated portfolio
+and daily-price files, aligns series, and calculates documented simple/log returns,
+constant-weight portfolio returns, descriptive statistics, covariance, correlation,
+drawdown, and gross-weight concentration. VaR is not yet implemented.
 
 Author: Lucas Silva
 
@@ -47,6 +47,12 @@ The current foundation provides:
 - offline long-format CSV market-data provider with explicit missing-price policy;
 - deterministic intersection/union alignment without implicit price filling;
 - SHA-256-addressed, schema-versioned JSON market-data cache with atomic writes;
+- simple and logarithmic asset returns with complete-data enforcement;
+- constant signed net-weight portfolio returns for single-currency portfolios;
+- sample/population variance, volatility, covariance, and correlation;
+- explicit daily annualization, cumulative wealth, drawdown, and maximum drawdown;
+- gross-weight Herfindahl concentration and effective position count;
+- immutable analytics results and structured failures without `NaN` success states;
 - synthetic offline portfolio/price samples and generated XLSX test workbooks;
 - automated tests, coverage, linting, formatting, and strict type checking;
 - continuous integration on supported Python and operating-system combinations;
@@ -64,7 +70,6 @@ Zeus Risk Engine 0.1.0
 The project will add capabilities incrementally:
 
 - interactive portfolio column mapping;
-- returns, volatility, correlation, covariance, drawdown, and concentration;
 - historical and parametric VaR, Expected Shortfall, and EWMA;
 - PySide6 portfolio and results workflows;
 - versioned projects and risk configurations;
@@ -194,15 +199,16 @@ the domain and quantitative modules exist.
 - [CSV portfolio format](docs/models/csv-portfolio-format.md)
 - [XLSX portfolio format](docs/models/xlsx-portfolio-format.md)
 - [Local market-data format and contracts](docs/models/market-data.md)
+- [Basic analytics formulas and conventions](docs/concepts/basic-analytics.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
 ## Roadmap
 
-The next planned phase is **Phase 6 — basic analytics**, introducing documented simple
-and logarithmic returns, volatility, correlation, covariance, drawdown, and
-concentration over the validated market-data contracts. VaR remains reserved for
-Phase 7.
+The next planned phase is **Phase 7 — historical VaR**, introducing an explicit loss
+sign convention, confidence/horizon/window configuration, documented empirical
+quantiles, structured results, and numerical regression tests. Expected Shortfall
+remains reserved for Phase 8.
 
 ## License
 

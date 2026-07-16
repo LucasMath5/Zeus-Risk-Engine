@@ -36,9 +36,19 @@ and the project intends to follow [Semantic Versioning](https://semver.org/spec/
   revalidation on load.
 - Synthetic local price sample, format documentation, and unit/integration coverage for
   provider, alignment, cache, and domain invariants.
+- Immutable return, descriptive-statistics, statistic-matrix, drawdown, and
+  concentration result contracts with structured analytics failures.
+- Simple/log asset returns and constant signed net-weight portfolio returns, including
+  mathematically correct aggregation of log-return inputs.
+- Sample/population variance, volatility with explicit annualization, covariance, and
+  correlation with zero-variance safeguards.
+- Cumulative wealth, drawdown episodes, maximum drawdown, gross-weight HHI, and
+  effective position count.
+- Mathematical analytics documentation plus unit, integration, and numerical
+  regression tests over synthetic data.
 
 ### Notes
 
 - Version `0.1.0` identifies the current pre-alpha codebase; no release tag has been
   published yet.
-- Risk-model and graphical-interface behavior are not implemented yet.
+- VaR, Expected Shortfall, and graphical-interface behavior are not implemented yet.
