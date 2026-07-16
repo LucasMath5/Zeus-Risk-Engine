@@ -28,7 +28,7 @@ forem a forma mais reconhecida no mercado.
 | **Drawdown** | Queda relativa não positiva da riqueza em relação ao pico anterior: `W_t / pico_t - 1`. |
 | **EWMA** | *Exponentially Weighted Moving Average*; método que atribui peso exponencialmente decrescente a observações passadas. |
 | **Exceção de VaR** | Observação em que a perda realizada excede o limite de VaR segundo a mesma convenção e horizonte. |
-| **Expected Shortfall (ES/CVaR)** | Perda média condicional na cauda além do limiar de VaR, segundo definição amostral ou distribucional documentada. Considera a severidade além do quantil. |
+| **Expected Shortfall (ES/CVaR)** | Na Fase 8, média igualmente ponderada das perdas nos ranks estritamente posteriores ao rank do VaR, com piso em zero e reconciliação `ES >= VaR`. |
 | **Exposição bruta** | Soma dos valores absolutos das exposições, sem compensar posições compradas e vendidas. |
 | **Exposição líquida** | Soma algébrica das exposições, respeitando o sinal de cada posição. |
 | **Frequência** | Periodicidade das observações, como diária ou mensal. Frequência observada e regra de anualização não devem ser confundidas. |
@@ -39,7 +39,7 @@ forem a forma mais reconhecida no mercado.
 | **Maximum drawdown** | Maior magnitude positiva de drawdown no período, acompanhada das datas de pico, vale e eventual recuperação. |
 | **Moeda-base** | Moeda na qual os valores agregados da carteira são expressos. Conversão cambial não deve ser presumida. |
 | **Monte Carlo** | Método de simulação que gera cenários aleatórios segundo um modelo e uma seed controlável para estimar a distribuição de resultados. |
-| **Nearest-rank** | Quantil empírico sem interpolação cujo rank de base 1 é `ceil(confiança × tamanho da amostra)`. |
+| **Nearest-rank** | Quantil empírico sem interpolação cujo rank de base 1 é `ceil(confiança × tamanho da amostra)`; a cauda do ES começa no rank seguinte. |
 | **P&L** | *Profit and Loss*; ganho ou perda em um período, cuja base de cálculo deve ser compatível com o risco previsto. |
 | **Perda histórica** | Oposto do retorno de um cenário: `perda = -retorno`. Perdas econômicas são positivas e ganhos são negativos. |
 | **Peso** | Participação de uma posição em uma base agregada. Na Fase 2, a base é explicitamente líquida ou bruta. |
@@ -110,8 +110,7 @@ forem a forma mais reconhecida no mercado.
 
 Antes da implementação correspondente, devem ser definidos e documentados:
 
-- definição da cauda e tratamento de empates do Expected Shortfall, preservando a
-  convenção de perda da Fase 7;
+- definições de cauda do Expected Shortfall além dos ranks posteriores ao VaR;
 - métodos de quantil empírico além de nearest-rank;
 - calendários e fatores de anualização alternativos ao padrão diário 252;
 - calendários, timezone de observações e alinhamentos além das políticas locais da

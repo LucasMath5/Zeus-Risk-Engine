@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Decimal, localcontext
 from enum import StrEnum
 
 from zeus_risk.domain.analytics import ReturnMethod
@@ -13,6 +13,7 @@ from zeus_risk.domain.validation import raise_validation_error
 
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
+_RISK_PRECISION = 34
 
 
 class EmpiricalQuantileMethod(StrEnum):
@@ -197,7 +198,7 @@ class HistoricalVaRResult:
             )
         _validate_finite_decimal(self.quantile_loss, field="quantile_loss")
         _validate_finite_decimal(self.value_at_risk, field="value_at_risk")
-        expected_quantile = sorted(item.value for item in self.losses)[self.quantile_rank - 1]
+        expected_quantile = self.ranked_losses[self.quantile_rank - 1].value
         if self.quantile_loss != expected_quantile:
             raise_validation_error(
                 "VAR_QUANTILE_MISMATCH",
@@ -249,12 +250,109 @@ class HistoricalVaRResult:
 
         return self.losses[-1].end_date
 
+    @property
+    def ranked_losses(self) -> tuple[HistoricalLossObservation, ...]:
+        """Return losses by ascending value with chronological tie-breaking."""
+
+        return tuple(
+            sorted(
+                self.losses,
+                key=lambda item: (item.value, item.end_date, item.start_date),
+            )
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class HistoricalExpectedShortfallResult:
+    """Historical tail mean reconciled with one effective VaR result."""
+
+    historical_var: HistoricalVaRResult
+    tail_losses: tuple[HistoricalLossObservation, ...]
+    tail_mean_loss: Decimal
+    expected_shortfall: Decimal
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.historical_var, HistoricalVaRResult):
+            raise_validation_error(
+                "INVALID_EXPECTED_SHORTFALL_VAR_RESULT",
+                "Historical Expected Shortfall requires a HistoricalVaRResult.",
+                field="historical_var",
+            )
+        if (
+            not isinstance(self.tail_losses, tuple)
+            or not self.tail_losses
+            or any(not isinstance(item, HistoricalLossObservation) for item in self.tail_losses)
+        ):
+            raise_validation_error(
+                "INVALID_EXPECTED_SHORTFALL_TAIL",
+                "Historical Expected Shortfall requires a non-empty loss tail.",
+                field="tail_losses",
+            )
+        expected_tail = self.historical_var.ranked_losses[self.historical_var.quantile_rank :]
+        if not expected_tail:
+            raise_validation_error(
+                "EMPTY_EXPECTED_SHORTFALL_TAIL",
+                "Historical VaR result does not contain observations beyond its rank.",
+                field="tail_losses",
+            )
+        if self.tail_losses != expected_tail:
+            raise_validation_error(
+                "EXPECTED_SHORTFALL_TAIL_MISMATCH",
+                "Expected Shortfall tail must contain exactly the ranks beyond VaR.",
+                field="tail_losses",
+            )
+        _validate_finite_decimal(self.tail_mean_loss, field="tail_mean_loss")
+        _validate_finite_decimal(self.expected_shortfall, field="expected_shortfall")
+        with localcontext() as context:
+            context.prec = _RISK_PRECISION
+            context.rounding = ROUND_HALF_EVEN
+            expected_mean = sum((item.value for item in self.tail_losses), _ZERO) / Decimal(
+                len(self.tail_losses)
+            )
+        if self.tail_mean_loss != expected_mean:
+            raise_validation_error(
+                "EXPECTED_SHORTFALL_MEAN_MISMATCH",
+                "Expected Shortfall mean must reconcile with the effective loss tail.",
+                field="tail_mean_loss",
+            )
+        expected_value = max(self.tail_mean_loss, _ZERO)
+        if self.expected_shortfall != expected_value:
+            raise_validation_error(
+                "EXPECTED_SHORTFALL_VALUE_MISMATCH",
+                "Expected Shortfall must be the non-negative reported tail mean.",
+                field="expected_shortfall",
+            )
+        if self.expected_shortfall < self.historical_var.value_at_risk:
+            raise_validation_error(
+                "EXPECTED_SHORTFALL_BELOW_VAR",
+                "Expected Shortfall must not be lower than its associated VaR.",
+                field="expected_shortfall",
+            )
+
+    @property
+    def tail_count(self) -> int:
+        """Return the number of ranked losses strictly beyond the VaR rank."""
+
+        return len(self.tail_losses)
+
+    @property
+    def tail_start_date(self) -> date:
+        """Return the earliest scenario start represented in the tail."""
+
+        return min(item.start_date for item in self.tail_losses)
+
+    @property
+    def tail_end_date(self) -> date:
+        """Return the latest scenario end represented in the tail."""
+
+        return max(item.end_date for item in self.tail_losses)
+
 
 def _validate_date(value: object, *, field: str) -> None:
     if not isinstance(value, date) or isinstance(value, datetime):
         raise_validation_error(
             "INVALID_VAR_DATE",
-            "Historical VaR dates must be dates without time components.",
+            "Historical risk dates must be dates without time components.",
             field=field,
             item=str(value),
         )
@@ -264,14 +362,14 @@ def _validate_finite_decimal(value: object, *, field: str) -> None:
     if not isinstance(value, Decimal):
         raise_validation_error(
             "INVALID_VAR_DECIMAL",
-            "Historical VaR numeric values must be Decimal instances.",
+            "Historical risk numeric values must be Decimal instances.",
             field=field,
             item=str(value),
         )
     if not value.is_finite():
         raise_validation_error(
             "NON_FINITE_VAR_VALUE",
-            "Historical VaR numeric values must be finite.",
+            "Historical risk numeric values must be finite.",
             field=field,
             item=str(value),
         )

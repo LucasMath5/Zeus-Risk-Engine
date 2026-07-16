@@ -134,16 +134,20 @@ core. O contrato detalhado está em [dados de mercado locais](../models/market-d
 A Fase 6 entrega funções puras em `core.analytics` para retornos, estatísticas,
 matrizes, drawdown e concentração. A Fase 7 acrescenta `core.risk` com VaR histórico
 nearest-rank sobre `ReturnSeries` diária, configuração imutável e amostra de perdas
-auditável. Esses módulos recebem contratos validados e devolvem resultados imutáveis.
-O contexto `Decimal` local tem 34 dígitos e não altera configuração global.
+auditável. A Fase 8 deriva Expected Shortfall dos ranks posteriores ao VaR e incorpora
+o resultado de VaR completo para impedir configurações ou amostras divergentes. Esses
+módulos recebem contratos validados e devolvem resultados imutáveis. O contexto
+`Decimal` local tem 34 dígitos e não altera configuração global.
 
 O core não lê arquivos, providers ou cache e não conhece Qt. Falhas quantitativas
 esperadas usam `AnalyticsError` ou `RiskCalculationError` com códigos estruturados.
 Fórmulas, estimadores, hipóteses e tolerâncias estão em
 [analytics básicos](../concepts/basic-analytics.md) e
-[VaR histórico](../concepts/historical-var.md). As convenções de perda, quantil,
-horizonte e unidade são formalizadas no
-[ADR-004](../decisions/ADR-004-historical-var-conventions.md). Uma interface comum de
+[VaR histórico](../concepts/historical-var.md) e
+[Expected Shortfall histórico](../concepts/historical-expected-shortfall.md). As
+convenções de perda, quantil, horizonte, unidade e cauda são formalizadas no
+[ADR-004](../decisions/ADR-004-historical-var-conventions.md) e no
+[ADR-005](../decisions/ADR-005-historical-expected-shortfall-conventions.md). Uma interface comum de
 modelos de risco só será extraída quando ao menos dois modelos reais demonstrarem a
 abstração.
 
@@ -192,6 +196,8 @@ registrada no [ADR-002](../decisions/ADR-002-use-of-pyside6.md).
 | `StatisticMatrix` | covariância ou correlação quadrada, simétrica e identificada |
 | `DrawdownResult` | riqueza acumulada, drawdowns e episódio máximo |
 | `ConcentrationResult` | pesos brutos, HHI e quantidade efetiva de posições |
+| `HistoricalVaRResult` | configuração, amostra, rank, quantil, VaR, unidade, convenção e datas |
+| `HistoricalExpectedShortfallResult` | VaR associado, cauda empírica, média bruta e ES reconciliado |
 | `RiskConfiguration` | parâmetros validados e compatíveis com um schema |
 | `ValidationIssue` | severidade, código, mensagem e localização de um problema |
 | `ImportResult` | linhas/posições, problemas e resumo da importação |
@@ -199,9 +205,9 @@ registrada no [ADR-002](../decisions/ADR-002-use-of-pyside6.md).
 | `ExecutionRecord` | evidência reproduzível de uma execução futura |
 
 Os contratos de carteira foram concretizados na Fase 2, os de mercado na Fase 5, os
-analytics descritivos na Fase 6 e a configuração/resultado do VaR histórico na Fase 7.
-Os demais continuam como vocabulário inicial e só devem incluir campos usados por
-casos de uso reais.
+analytics descritivos na Fase 6, a configuração/resultado do VaR histórico na Fase 7
+e o resultado de Expected Shortfall na Fase 8. Os demais continuam como vocabulário
+inicial e só devem incluir campos usados por casos de uso reais.
 
 ## Validação e tratamento de falhas
 
@@ -314,12 +320,14 @@ zeus-risk-engine/
 │   │   └── overview.md
 │   ├── concepts/              # fórmulas e interpretação, a partir da Fase 6
 │   │   ├── basic-analytics.md
+│   │   ├── historical-expected-shortfall.md
 │   │   └── historical-var.md
 │   ├── decisions/
 │   │   ├── ADR-001-separation-of-ui-and-core.md
 │   │   ├── ADR-002-use-of-pyside6.md
 │   │   ├── ADR-003-decimal-and-portfolio-weights.md
-│   │   └── ADR-004-historical-var-conventions.md
+│   │   ├── ADR-004-historical-var-conventions.md
+│   │   └── ADR-005-historical-expected-shortfall-conventions.md
 │   ├── development/
 │   │   └── roadmap.md
 │   ├── models/
@@ -350,6 +358,7 @@ zeus-risk-engine/
 │       │   ├── backtesting/
 │       │   ├── portfolio/
 │       │   ├── risk/
+│       │   │   ├── historical_expected_shortfall.py
 │       │   │   └── historical_var.py
 │       │   └── stress/
 │       ├── domain/
@@ -390,16 +399,16 @@ zeus-risk-engine/
 
 ### Política de criação incremental
 
-Até a Fase 7 foram criados a fundação executável, os domínios de carteira, mercado,
+Até a Fase 8 foram criados a fundação executável, os domínios de carteira, mercado,
 analytics e risco histórico, os adapters CSV/XLSX, o pipeline local de preços e o
-primeiro motor de risco. Cada subpacote, adapter, pasta de teste ou asset futuro só será
-criado com seu primeiro conteúdo real. Isso evita estrutura ornamental e torna cada
-mudança explicável.
+primeiro motor com VaR e Expected Shortfall. Cada subpacote, adapter, pasta de teste ou
+asset futuro só será criado com seu primeiro conteúdo real. Isso evita estrutura
+ornamental e torna cada mudança explicável.
 
 ## Decisões ainda necessárias
 
 - ADR sobre conversão para moeda-base e fontes de câmbio;
-- decisão sobre definição amostral da cauda e empates do Expected Shortfall;
+- decisão sobre caudas ponderadas ou interpoladas além da convenção empírica da Fase 8;
 - ADR sobre calendários e políticas de missing values além das opções locais já
   fechadas na Fase 5;
 - ADR sobre persistência SQLite e migrações;

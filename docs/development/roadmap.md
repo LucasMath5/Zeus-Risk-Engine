@@ -24,7 +24,7 @@
 | 5 | dados de mercado locais | Fases 2–3 | port, provider CSV, séries, metadados, alinhamento e cache testados | concluída |
 | 6 | analytics básicos | Fases 2 e 5 | retornos, volatilidade, correlação, drawdown e concentração documentados | concluída |
 | 7 | VaR histórico | Fase 6 | configuração, convenção, quantil, resultado e testes numéricos | concluída |
-| 8 | Expected Shortfall | Fase 7 | cauda, comparação com VaR, documentação e testes | planejada |
+| 8 | Expected Shortfall | Fase 7 | cauda, comparação com VaR, documentação e testes | concluída |
 | 9 | interface inicial | Fases 3 e 6–8 | importação, validação, posições e resultados em PySide6 | planejada |
 | 10 | projetos e configurações | Fase 9 | salvar/carregar e JSON com schema validado | planejada |
 | 11 | VaR paramétrico normal | Fase 6 | covariância, quantil normal e documentação reconciliados | planejada |
@@ -708,20 +708,20 @@ docs/decisions/ADR-004-historical-var-conventions.md
 feat(risk): add historical value at risk
 ```
 
-## Próxima etapa recomendada — Fase 8
+## Fase 8 — Expected Shortfall histórico concluída
 
 ### Objetivo
 
-Implementar Expected Shortfall histórico sobre a mesma configuração, amostra e
-convenção de perda do VaR histórico, com tratamento explícito da fronteira da cauda e
-reconciliação `ES >= VaR`.
+Foi entregue Expected Shortfall histórico sobre a mesma configuração, amostra e
+convenção de perda do VaR histórico, com fronteira de cauda por rank, desempate
+cronológico e reconciliação `ES >= VaR`.
 
-### Funcionalidades inicialmente previstas
+### Funcionalidades incluídas
 
-- cálculo da cauda empírica a partir do resultado nearest-rank da Fase 7;
-- definição documentada para inclusão do limiar e observações empatadas;
-- `HistoricalExpectedShortfallResult` imutável com VaR associado;
-- perda média da cauda em unidade relativa;
+- cálculo da cauda empírica pelos ranks posteriores ao nearest-rank da Fase 7;
+- desempate cronológico estável sem expandir a cauda;
+- `HistoricalExpectedShortfallResult` imutável contendo o VaR efetivo;
+- média bruta da cauda e ES não negativo em unidade relativa;
 - amostra de cauda, contagem, datas, configuração e convenção preservadas;
 - falhas específicas para cauda vazia, incompatível ou insuficiente;
 - exemplo manual, integração e regressão numérica.
@@ -733,18 +733,21 @@ reconciliação `ES >= VaR`.
 - VaR ou Expected Shortfall monetário e conversão cambial;
 - interface PySide6, persistência, processamento assíncrono ou relatórios.
 
-### Decisões a fechar antes da implementação
+### Decisões fechadas na Fase 8
 
-- cauda definida pelos piores ranks ou por comparação `loss >= quantile_loss`;
-- tratamento de empates exatamente no limiar do VaR;
-- denominador da média quando o quantil nearest-rank não coincide com a massa teórica;
-- aplicação do piso em zero ao ES quando toda a cauda representa ganho;
-- composição do resultado para evitar duplicar configuração e amostra do VaR.
+- a cauda contém exatamente os ranks `k+1 ... n`, excluindo o rank do VaR;
+- empates usam valor, data final e data inicial como ordenação determinística;
+- a média usa pesos iguais sobre os `n - k` ranks efetivos;
+- `tail_mean_loss` preserva a média bruta e ES aplica `max(média, 0)`;
+- o resultado de ES incorpora o `HistoricalVaRResult` em vez de duplicar configuração;
+- a mesma precisão decimal local de 34 dígitos é usada na média;
+- as escolhas e alternativas estão formalizadas no ADR-005.
 
-### Arquivos inicialmente previstos
+### Arquivos entregues
 
 ```text
 src/zeus_risk/core/risk/historical_expected_shortfall.py
+src/zeus_risk/core/risk/__init__.py
 src/zeus_risk/domain/risk.py
 tests/unit/core/risk/test_historical_expected_shortfall.py
 tests/unit/domain/test_risk.py
@@ -754,7 +757,7 @@ docs/concepts/historical-expected-shortfall.md
 docs/decisions/ADR-005-historical-expected-shortfall-conventions.md
 ```
 
-### Critérios de saída previstos
+### Evidências de conclusão
 
 - ES e VaR usam exatamente configuração, janela, horizonte, método e sinal compatíveis;
 - a definição da cauda e o tratamento de empates são documentados;
@@ -762,12 +765,86 @@ docs/decisions/ADR-005-historical-expected-shortfall-conventions.md
 - para entradas válidas, ES é finito, não negativo e não inferior ao VaR;
 - cauda insuficiente não retorna zero ou `NaN` como substituto de sucesso;
 - o core continua independente de arquivo, provider, cache e Qt;
-- Ruff, mypy, testes, cobertura, build e smoke test permanecem aprovados.
+- testes unitários cobrem uma ou várias perdas na cauda, empates, ganhos e contratos;
+- integração percorre CSV local, alinhamento, retornos da carteira, VaR e ES;
+- regressão preserva VaR de 8% e ES de 12% no caso manual de 90%.
+- Ruff e formatação aprovados; mypy estrito aprovado em 74 arquivos;
+- 240 testes aprovados com cobertura total de 91%;
+- 21 documentos Markdown válidos em UTF-8 e nenhum link interno quebrado;
+- wheel e source distribution construídos, seguidos de instalação isolada do wheel e
+  smoke test reconciliando VaR de 4% e ES de 10%.
 
 ### Commit sugerido para a Fase 8
 
 ```text
 feat(risk): add historical expected shortfall
+```
+
+## Próxima etapa recomendada — Fase 9
+
+### Objetivo
+
+Implementar a primeira interface desktop PySide6 funcional para importar e validar uma
+carteira, visualizar posições, configurar o risco histórico e apresentar VaR e
+Expected Shortfall sem mover regras quantitativas para a camada visual.
+
+### Funcionalidades inicialmente previstas
+
+- bootstrap da aplicação PySide6 e janela principal;
+- fluxo para selecionar CSV ou XLSX e worksheet quando aplicável;
+- painel de problemas estruturados de importação e validação;
+- tabela somente leitura das posições aceitas;
+- configuração de confiança, horizonte e janela;
+- seleção de arquivo local de preços e execução do pipeline histórico;
+- cartões ou tabela de VaR e Expected Shortfall com unidade e parâmetros;
+- estados inicial, vazio, sucesso e falha compreensíveis;
+- testes de models/controllers e smoke test GUI em modo offscreen.
+
+### Fora da Fase 9
+
+- salvar ou carregar projetos e configurações, reservados à Fase 10;
+- VaR paramétrico, EWMA, backtesting e stress testing;
+- workers e cancelamento de tarefas longas, reservados à Fase 14;
+- persistência SQLite, histórico e relatórios;
+- identidade visual final ou dashboards avançados.
+
+### Decisões a fechar antes da implementação
+
+- dependência e versão mínima de PySide6 compatível com Python suportado;
+- composição inicial da aplicação e fronteira dos casos de uso;
+- navegação por páginas, abas ou fluxo orientado a etapas;
+- models Qt necessários para posições e problemas sem duplicar o domínio;
+- política de execução síncrona limitada antes dos workers da Fase 14;
+- conjunto mínimo de estados e mensagens testáveis em modo offscreen.
+
+### Arquivos inicialmente previstos
+
+```text
+src/zeus_risk/app/__init__.py
+src/zeus_risk/app/application.py
+src/zeus_risk/app/main_window.py
+src/zeus_risk/app/models/
+src/zeus_risk/app/views/
+src/zeus_risk/application/
+tests/gui/
+docs/tutorials/first-desktop-workflow.md
+docs/decisions/ADR-006-initial-desktop-composition.md
+```
+
+### Critérios de saída previstos
+
+- a aplicação abre e encerra com segurança em ambiente desktop suportado;
+- o usuário importa uma carteira e visualiza problemas e posições sem terminal;
+- o pipeline local produz VaR e ES visíveis com configuração e unidade;
+- a UI não recalcula retornos, VaR ou ES;
+- falhas estruturadas são traduzidas em mensagens compreensíveis sem perder códigos;
+- testes GUI executam em modo offscreen e não exigem rede;
+- Ruff, mypy, testes, cobertura, build e smoke test permanecem aprovados.
+
+### Commit sugerido para a Fase 9
+
+```text
+feat(ui): add initial portfolio risk workflow
 ```
 
 ## Template obrigatório para cada fase

@@ -14,6 +14,7 @@ from zeus_risk.domain import (
     DataFrequency,
     DomainValidationError,
     EmpiricalQuantileMethod,
+    HistoricalExpectedShortfallResult,
     HistoricalLossObservation,
     HistoricalVaRConfiguration,
     HistoricalVaRResult,
@@ -41,6 +42,16 @@ def _result() -> HistoricalVaRResult:
         quantile_loss=Decimal("0.1"),
         value_at_risk=Decimal("0.1"),
         reference_date=date(2026, 1, 3),
+    )
+
+
+def _expected_shortfall_result() -> HistoricalExpectedShortfallResult:
+    historical_var = _result()
+    return HistoricalExpectedShortfallResult(
+        historical_var=historical_var,
+        tail_losses=(historical_var.losses[1],),
+        tail_mean_loss=Decimal("0.2"),
+        expected_shortfall=Decimal("0.2"),
     )
 
 
@@ -124,3 +135,34 @@ def test_result_reconciles_sample_rank_quantile_value_and_reference_date() -> No
         with pytest.raises(DomainValidationError) as exc_info:
             replace(result, **values)
         assert exc_info.value.primary_issue.code == expected_code
+
+
+def test_expected_shortfall_result_reconciles_var_tail_mean_and_value() -> None:
+    result = _expected_shortfall_result()
+
+    assert result.tail_count == 1
+    assert result.tail_start_date == date(2026, 1, 2)
+    assert result.tail_end_date == date(2026, 1, 3)
+    assert result.expected_shortfall >= result.historical_var.value_at_risk
+
+    invalid_replacements = (
+        ({"tail_losses": result.historical_var.losses[:1]}, "EXPECTED_SHORTFALL_TAIL_MISMATCH"),
+        ({"tail_mean_loss": Decimal("0.1")}, "EXPECTED_SHORTFALL_MEAN_MISMATCH"),
+        ({"expected_shortfall": Decimal("0.1")}, "EXPECTED_SHORTFALL_VALUE_MISMATCH"),
+    )
+    for values, expected_code in invalid_replacements:
+        with pytest.raises(DomainValidationError) as exc_info:
+            replace(result, **values)
+        assert exc_info.value.primary_issue.code == expected_code
+
+
+def test_expected_shortfall_result_rejects_invalid_var_and_empty_tail() -> None:
+    result = _expected_shortfall_result()
+
+    with pytest.raises(DomainValidationError) as var_error:
+        replace(result, historical_var=cast(HistoricalVaRResult, object()))
+    with pytest.raises(DomainValidationError) as tail_error:
+        replace(result, tail_losses=())
+
+    assert var_error.value.primary_issue.code == "INVALID_EXPECTED_SHORTFALL_VAR_RESULT"
+    assert tail_error.value.primary_issue.code == "INVALID_EXPECTED_SHORTFALL_TAIL"

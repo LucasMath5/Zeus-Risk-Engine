@@ -7,8 +7,8 @@ diária já validada. O cálculo é puro: não lê arquivos, não consulta provi
 cache, não converte moedas e não importa PySide6.
 
 O resultado preserva a amostra efetiva de perdas, configuração, método de retorno,
-unidade, convenção de sinal, rank do quantil e datas. Expected Shortfall permanece
-fora desta fase.
+unidade, convenção de sinal, rank do quantil e datas. O cálculo de Expected Shortfall
+é uma operação separada da Fase 8 que compõe este resultado sem alterar o VaR.
 
 ## Configuração
 
@@ -163,7 +163,9 @@ zero e o piso documentado é aplicado.
 - somente nearest-rank;
 - VaR relativo, sem conversão monetária;
 - nenhuma conversão cambial ou agregação multimoeda;
-- sem Expected Shortfall, VaR paramétrico, EWMA, backtesting ou Monte Carlo;
+- esta função não calcula Expected Shortfall; a operação separada está documentada em
+  [Expected Shortfall histórico](historical-expected-shortfall.md);
+- sem VaR paramétrico, EWMA, backtesting ou Monte Carlo;
 - sem testes de adequação da janela ao uso econômico;
 - sem interface gráfica, persistência ou relatório.
 

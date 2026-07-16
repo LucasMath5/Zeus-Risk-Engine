@@ -187,8 +187,8 @@ ficam visíveis; não há dependência de arquivo, provider ou PySide6 no core.
 
 ## UC-07 — Executar risco histórico
 
-**Objetivo:** estimar VaR histórico sob uma configuração explícita; Expected
-Shortfall será acrescentado na Fase 8 sobre a mesma convenção.
+**Objetivo:** estimar VaR e Expected Shortfall históricos sob uma configuração
+explícita e uma única amostra de perdas.
 
 **Pré-condições:** série de retornos válida e observações suficientes.
 
@@ -200,18 +200,19 @@ Shortfall será acrescentado na Fase 8 sobre a mesma convenção.
 3. Seleciona deterministicamente a janela mais recente.
 4. Converte cada cenário por `perda = -retorno`.
 5. Ordena as perdas e calcula VaR por nearest-rank sem interpolação.
-6. Retorna quantil bruto, VaR não negativo, convenção, unidade, amostra, parâmetros e
-   datas.
+6. Seleciona os ranks estritamente posteriores ao VaR, com desempate cronológico.
+7. Calcula a média da cauda e reconcilia `Expected Shortfall >= VaR`.
+8. Retorna quantil e média brutos, VaR e ES não negativos, convenção, unidade,
+   amostras, parâmetros e datas.
 
 **Alternativas e falhas:** confiança, horizonte, janela ou método inválido e amostra
 insuficiente não retornam zero ou `NaN` como substitutos de sucesso; produzem falha
 estruturada. Zero permanece possível quando o quantil é ganho e o piso documentado é
-aplicado.
+aplicado. Cauda vazia ou incompatível também produz falha explícita.
 
-**Critérios de aceitação:** casos pequenos reconciliam perdas, ordenação, rank e VaR
-manualmente; escolhas de quantil e horizonte estão documentadas; a amostra e a
-configuração acompanham o resultado; Expected Shortfall futuro deverá reutilizar a
-mesma convenção.
+**Critérios de aceitação:** casos pequenos reconciliam perdas, ordenação, rank, VaR,
+cauda e ES manualmente; escolhas de quantil, horizonte e empates estão documentadas;
+configuração e amostras acompanham o resultado; ES nunca é inferior ao VaR associado.
 
 ## UC-08 — Interpretar e comparar resultados
 

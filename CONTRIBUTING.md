@@ -16,8 +16,10 @@ Read the following documents first:
 - [Development roadmap](docs/development/roadmap.md)
 - [Basic analytics formulas and conventions](docs/concepts/basic-analytics.md)
 - [Historical VaR formulas and conventions](docs/concepts/historical-var.md)
+- [Historical Expected Shortfall formulas](docs/concepts/historical-expected-shortfall.md)
 - [ADR-001: separation of UI and core](docs/decisions/ADR-001-separation-of-ui-and-core.md)
 - [ADR-004: historical VaR conventions](docs/decisions/ADR-004-historical-var-conventions.md)
+- [ADR-005: Expected Shortfall conventions](docs/decisions/ADR-005-historical-expected-shortfall-conventions.md)
 
 Do not implement a later phase merely because it is listed in the roadmap. Each
 change should have a bounded objective, acceptance criteria, tests, documentation,

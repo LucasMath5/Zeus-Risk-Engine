@@ -32,6 +32,7 @@ from zeus_risk.domain.portfolio import Portfolio, PortfolioValuation, PositionWe
 from zeus_risk.domain.position import Position
 from zeus_risk.domain.risk import (
     EmpiricalQuantileMethod,
+    HistoricalExpectedShortfallResult,
     HistoricalLossObservation,
     HistoricalVaRConfiguration,
     HistoricalVaRResult,
@@ -54,6 +55,7 @@ __all__ = [
     "DrawdownResult",
     "DataFrequency",
     "EmpiricalQuantileMethod",
+    "HistoricalExpectedShortfallResult",
     "HistoricalLossObservation",
     "HistoricalVaRConfiguration",
     "HistoricalVaRResult",

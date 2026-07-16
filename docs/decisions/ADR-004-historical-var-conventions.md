@@ -5,6 +5,9 @@
 - **Decisor:** Lucas Silva
 - **Escopo:** Fase 7 — Value at Risk histórico
 
+Esta decisão é complementada pelo ADR-005 para a definição da cauda do Expected
+Shortfall; suas convenções de VaR permanecem vigentes.
+
 ## Contexto
 
 VaR histórico depende de escolhas que podem produzir números diferentes sobre a mesma
@@ -139,6 +142,7 @@ alterar silenciosamente resultados existentes.
 ## Relações
 
 - [Value at Risk histórico](../concepts/historical-var.md)
+- [ADR-005 — Expected Shortfall histórico](ADR-005-historical-expected-shortfall-conventions.md)
 - [Analytics básicos](../concepts/basic-analytics.md)
 - [Visão geral da arquitetura](../architecture/overview.md)
 - [Glossário](../glossary.md)

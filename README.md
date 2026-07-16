@@ -12,10 +12,10 @@ analyzing, and monitoring the risk of financial portfolios. It is designed as a
 professional software-engineering and quantitative-finance portfolio project, with
 an emphasis on reproducibility, auditability, clear assumptions, and learning.
 
-**Current status:** Phase 7 — historical Value at Risk. The package reads validated
-portfolio and daily-price files, calculates descriptive analytics, and estimates
-documented nearest-rank historical VaR with explicit confidence, horizon, window,
-loss convention, effective sample, and dates.
+**Current status:** Phase 8 — historical Expected Shortfall. The package reads
+validated portfolio and daily-price files, calculates descriptive analytics, and
+estimates documented nearest-rank historical VaR and rank-tail Expected Shortfall with
+explicit configuration, samples, conventions, units, and dates.
 
 Author: Lucas Silva
 
@@ -56,6 +56,8 @@ The current foundation provides:
 - immutable historical VaR configuration and result contracts;
 - rolling simple/log horizon scenarios with deterministic recent-window selection;
 - positive-loss nearest-rank historical VaR with explicit tail-resolution safeguards;
+- historical Expected Shortfall over ranks beyond VaR with deterministic tie handling;
+- reconciled VaR/ES results preserving raw loss thresholds, tail means, and samples;
 - synthetic offline portfolio/price samples and generated XLSX test workbooks;
 - automated tests, coverage, linting, formatting, and strict type checking;
 - continuous integration on supported Python and operating-system combinations;
@@ -73,7 +75,7 @@ Zeus Risk Engine 0.1.0
 The project will add capabilities incrementally:
 
 - interactive portfolio column mapping;
-- Expected Shortfall, parametric VaR, and EWMA;
+- parametric VaR, parametric Expected Shortfall, and EWMA;
 - PySide6 portfolio and results workflows;
 - versioned projects and risk configurations;
 - backtesting, stress testing, SQLite history, and reproducible reports;
@@ -204,15 +206,17 @@ the domain and quantitative modules exist.
 - [Local market-data format and contracts](docs/models/market-data.md)
 - [Basic analytics formulas and conventions](docs/concepts/basic-analytics.md)
 - [Historical VaR formulas and conventions](docs/concepts/historical-var.md)
+- [Historical Expected Shortfall formulas](docs/concepts/historical-expected-shortfall.md)
 - [ADR-004: historical VaR conventions](docs/decisions/ADR-004-historical-var-conventions.md)
+- [ADR-005: historical Expected Shortfall conventions](docs/decisions/ADR-005-historical-expected-shortfall-conventions.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
 ## Roadmap
 
-The next planned phase is **Phase 8 — historical Expected Shortfall**, reusing the
-Phase 7 loss convention and effective sample while defining the empirical tail,
-boundary treatment, structured result, and numerical reconciliation with VaR.
+The next planned phase is **Phase 9 — initial desktop interface**, introducing the
+first PySide6 workflow for portfolio import, validation, positions, risk parameters,
+and basic VaR/Expected Shortfall results without moving calculations into widgets.
 
 ## License
 

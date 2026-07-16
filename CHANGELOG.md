@@ -53,11 +53,19 @@ and the project intends to follow [Semantic Versioning](https://semver.org/spec/
   non-negative VaR, unit, convention, and dates.
 - ADR-004, mathematical documentation, manual example, and unit, integration, and
   numerical regression coverage for historical VaR.
+- Immutable historical Expected Shortfall results composed with the exact VaR result
+  and effective sample used.
+- Rank-defined empirical tails, deterministic chronological tie-breaking, raw tail
+  means, non-negative ES, and explicit `ES >= VaR` reconciliation.
+- ADR-005, mathematical documentation, manual example, and unit, integration, and
+  numerical regression coverage for historical Expected Shortfall.
 
 ### Notes
 
 - Version `0.1.0` identifies the current pre-alpha codebase; no release tag has been
   published yet.
-- Expected Shortfall and graphical-interface behavior are not implemented yet.
+- Graphical-interface behavior is not implemented yet.
 - Historical VaR is relative only; monetary conversion and additional empirical
   quantile methods remain deferred.
+- Historical Expected Shortfall is relative and equally weighted; fractional boundary
+  weights and alternative tail definitions remain deferred.
