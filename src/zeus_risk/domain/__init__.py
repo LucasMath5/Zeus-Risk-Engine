@@ -30,6 +30,14 @@ from zeus_risk.domain.market_data import (
 )
 from zeus_risk.domain.portfolio import Portfolio, PortfolioValuation, PositionWeight
 from zeus_risk.domain.position import Position
+from zeus_risk.domain.risk import (
+    EmpiricalQuantileMethod,
+    HistoricalLossObservation,
+    HistoricalVaRConfiguration,
+    HistoricalVaRResult,
+    LossConvention,
+    RiskMeasureUnit,
+)
 from zeus_risk.domain.validation import (
     DomainValidationError,
     ValidationIssue,
@@ -45,7 +53,12 @@ __all__ = [
     "DrawdownObservation",
     "DrawdownResult",
     "DataFrequency",
+    "EmpiricalQuantileMethod",
+    "HistoricalLossObservation",
+    "HistoricalVaRConfiguration",
+    "HistoricalVaRResult",
     "Instrument",
+    "LossConvention",
     "MarketDataIssue",
     "MarketDataLoadResult",
     "MarketDataMetadata",
@@ -64,6 +77,7 @@ __all__ = [
     "ReturnRow",
     "ReturnSeries",
     "ReturnTable",
+    "RiskMeasureUnit",
     "StatisticMatrix",
     "ValidationIssue",
     "ValidationSeverity",

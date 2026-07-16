@@ -23,7 +23,7 @@
 | 4 | importação XLSX | Fase 3 | seleção de planilha e mapeamento integrados à mesma validação | concluída |
 | 5 | dados de mercado locais | Fases 2–3 | port, provider CSV, séries, metadados, alinhamento e cache testados | concluída |
 | 6 | analytics básicos | Fases 2 e 5 | retornos, volatilidade, correlação, drawdown e concentração documentados | concluída |
-| 7 | VaR histórico | Fase 6 | configuração, convenção, quantil, resultado e testes numéricos | planejada |
+| 7 | VaR histórico | Fase 6 | configuração, convenção, quantil, resultado e testes numéricos | concluída |
 | 8 | Expected Shortfall | Fase 7 | cauda, comparação com VaR, documentação e testes | planejada |
 | 9 | interface inicial | Fases 3 e 6–8 | importação, validação, posições e resultados em PySide6 | planejada |
 | 10 | projetos e configurações | Fase 9 | salvar/carregar e JSON com schema validado | planejada |
@@ -628,23 +628,23 @@ docs/concepts/basic-analytics.md
 feat(analytics): add portfolio descriptive analytics
 ```
 
-## Próxima etapa recomendada — Fase 7
+## Fase 7 — VaR histórico concluída
 
 ### Objetivo
 
-Implementar Value at Risk histórico sobre séries de retorno validadas, com configuração
-imutável, convenção positiva de perda, quantil empírico documentado e resultados
-reconciliáveis.
+Foi entregue Value at Risk histórico sobre séries diárias de retorno validadas, com
+configuração imutável, convenção positiva de perda, nearest-rank documentado e
+resultados reconciliáveis.
 
-### Funcionalidades inicialmente previstas
+### Funcionalidades incluídas
 
 - `HistoricalVaRConfiguration` com confiança, horizonte, janela e método de quantil;
-- transformação explícita de retorno ou P&L em perda;
-- seleção determinística da janela histórica;
-- VaR relativo como magnitude positiva de perda;
-- resultado estruturado com confiança, horizonte, amostra, método e datas;
-- conversão monetária opcional apenas para carteira e moeda únicas, se a convenção for
-  fechada sem conversão cambial;
+- transformação explícita de retorno em perda por `perda = -retorno`;
+- cenários móveis sobrepostos com composição simples ou soma logarítmica;
+- seleção determinística dos cenários mais recentes;
+- VaR relativo não negativo com quantil bruto preservado;
+- resultado estruturado com configuração, unidade, convenção, rank, amostra e datas;
+- validação exata de resolução mínima da cauda;
 - falhas específicas para confiança, janela, amostra, quantil e escala inválidos;
 - documentação matemática, exemplo manual e regressão numérica.
 
@@ -656,18 +656,19 @@ reconciliáveis.
 - conversão cambial e agregação de carteiras multimoeda;
 - interface PySide6, persistência, processamento assíncrono ou relatórios.
 
-### Decisões a fechar antes da implementação
+### Decisões fechadas na Fase 7
 
-- definição exata do quantil empírico e eventual interpolação;
-- convenção `perda = -retorno` e apresentação positiva do VaR;
-- uso inicial de retorno simples ou preservação do método presente na série;
-- horizonte por retornos históricos agregados ou regra de escala explicitamente
-  limitada;
-- janela mínima por nível de confiança e tratamento de cauda sem observação suficiente;
-- VaR relativo apenas ou também monetário sobre valor líquido/bruto;
-- data de referência, unidade e metadados obrigatórios no resultado.
+- nearest-rank usa `ceil(confiança × janela)`, base 1 e nenhuma interpolação;
+- perda é o oposto do retorno e o VaR apresentado é `max(quantile_loss, 0)`;
+- o método simples ou logarítmico da série é preservado sem conversão;
+- horizonte usa retornos históricos móveis agregados, nunca raiz do tempo;
+- janela mínima é `ceil(1 / (1 - confiança))`;
+- a janela seleciona cenários depois da agregação de horizonte;
+- a Fase 7 entrega somente unidade relativa; VaR monetário não presume base ou câmbio;
+- resultado preserva amostra, rank, quantil, configuração, datas, unidade e convenção;
+- as escolhas e alternativas estão formalizadas no ADR-004.
 
-### Arquivos inicialmente previstos
+### Arquivos entregues
 
 ```text
 src/zeus_risk/core/risk/__init__.py
@@ -676,13 +677,14 @@ src/zeus_risk/domain/risk.py
 src/zeus_risk/exceptions/risk.py
 tests/unit/core/risk/test_historical_var.py
 tests/unit/domain/test_risk.py
+tests/unit/exceptions/test_risk_error.py
 tests/integration/test_historical_var_pipeline.py
 tests/regression/test_historical_var_reference.py
 docs/concepts/historical-var.md
 docs/decisions/ADR-004-historical-var-conventions.md
 ```
 
-### Critérios de saída previstos
+### Evidências de conclusão
 
 - fórmula, sinal de perda e quantil estão documentados antes ou junto do código;
 - a mesma amostra e configuração produzem resultado determinístico;
@@ -690,12 +692,82 @@ docs/decisions/ADR-004-historical-var-conventions.md
 - amostra insuficiente não retorna zero, `NaN` ou um quantil inventado;
 - casos pequenos reconciliam ordenação das perdas e quantil manualmente;
 - o cálculo não importa arquivo, provider, cache, Qt ou Expected Shortfall;
-- Ruff, mypy, testes, cobertura, build e smoke test permanecem aprovados.
+- testes unitários cobrem configuração, contratos, janela, horizonte simples/log,
+  quantil, piso em zero e falhas estruturadas;
+- integração percorre CSV local, alinhamento, retornos da carteira e VaR;
+- regressão preserva um caso de 90% com dez perdas reconciliadas manualmente.
+- Ruff e formatação aprovados; mypy estrito aprovado em 70 arquivos;
+- 230 testes aprovados com cobertura total de 91%;
+- 19 documentos Markdown válidos em UTF-8 e nenhum link interno quebrado;
+- wheel e source distribution construídos, seguidos de instalação isolada do wheel e
+  smoke test do VaR histórico.
 
 ### Commit sugerido para a Fase 7
 
 ```text
 feat(risk): add historical value at risk
+```
+
+## Próxima etapa recomendada — Fase 8
+
+### Objetivo
+
+Implementar Expected Shortfall histórico sobre a mesma configuração, amostra e
+convenção de perda do VaR histórico, com tratamento explícito da fronteira da cauda e
+reconciliação `ES >= VaR`.
+
+### Funcionalidades inicialmente previstas
+
+- cálculo da cauda empírica a partir do resultado nearest-rank da Fase 7;
+- definição documentada para inclusão do limiar e observações empatadas;
+- `HistoricalExpectedShortfallResult` imutável com VaR associado;
+- perda média da cauda em unidade relativa;
+- amostra de cauda, contagem, datas, configuração e convenção preservadas;
+- falhas específicas para cauda vazia, incompatível ou insuficiente;
+- exemplo manual, integração e regressão numérica.
+
+### Fora da Fase 8
+
+- VaR paramétrico normal, EWMA e Monte Carlo;
+- backtesting, exceções e testes de cobertura;
+- VaR ou Expected Shortfall monetário e conversão cambial;
+- interface PySide6, persistência, processamento assíncrono ou relatórios.
+
+### Decisões a fechar antes da implementação
+
+- cauda definida pelos piores ranks ou por comparação `loss >= quantile_loss`;
+- tratamento de empates exatamente no limiar do VaR;
+- denominador da média quando o quantil nearest-rank não coincide com a massa teórica;
+- aplicação do piso em zero ao ES quando toda a cauda representa ganho;
+- composição do resultado para evitar duplicar configuração e amostra do VaR.
+
+### Arquivos inicialmente previstos
+
+```text
+src/zeus_risk/core/risk/historical_expected_shortfall.py
+src/zeus_risk/domain/risk.py
+tests/unit/core/risk/test_historical_expected_shortfall.py
+tests/unit/domain/test_risk.py
+tests/integration/test_historical_expected_shortfall_pipeline.py
+tests/regression/test_historical_expected_shortfall_reference.py
+docs/concepts/historical-expected-shortfall.md
+docs/decisions/ADR-005-historical-expected-shortfall-conventions.md
+```
+
+### Critérios de saída previstos
+
+- ES e VaR usam exatamente configuração, janela, horizonte, método e sinal compatíveis;
+- a definição da cauda e o tratamento de empates são documentados;
+- exemplos pequenos reconciliam seleção da cauda e média manualmente;
+- para entradas válidas, ES é finito, não negativo e não inferior ao VaR;
+- cauda insuficiente não retorna zero ou `NaN` como substituto de sucesso;
+- o core continua independente de arquivo, provider, cache e Qt;
+- Ruff, mypy, testes, cobertura, build e smoke test permanecem aprovados.
+
+### Commit sugerido para a Fase 8
+
+```text
+feat(risk): add historical expected shortfall
 ```
 
 ## Template obrigatório para cada fase

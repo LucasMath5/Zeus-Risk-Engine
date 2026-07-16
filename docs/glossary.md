@@ -32,14 +32,16 @@ forem a forma mais reconhecida no mercado.
 | **Exposição bruta** | Soma dos valores absolutos das exposições, sem compensar posições compradas e vendidas. |
 | **Exposição líquida** | Soma algébrica das exposições, respeitando o sinal de cada posição. |
 | **Frequência** | Periodicidade das observações, como diária ou mensal. Frequência observada e regra de anualização não devem ser confundidas. |
-| **Horizonte** | Período futuro sobre o qual o risco é expresso, por exemplo um ou dez dias. A forma de escalonamento deve ser explícita. |
+| **Horizonte** | Período futuro sobre o qual o risco é expresso. No VaR histórico da Fase 7, dias significam observações diárias consecutivas e são compostos em blocos móveis, sem regra da raiz do tempo. |
 | **Índice Herfindahl (HHI)** | Soma dos quadrados dos pesos brutos. Varia de mais de zero a 1; valores maiores indicam maior concentração. |
 | **Instrumento (`Instrument`)** | Entidade negociável identificada por ticker e atributos como classe, moeda e setor. |
-| **Janela (`window`)** | Quantidade ou intervalo de observações históricas usadas por um cálculo. |
+| **Janela (`window`)** | Quantidade ou intervalo de observações históricas usadas por um cálculo. Na Fase 7, é a quantidade de cenários de horizonte mais recentes incluídos no VaR. |
 | **Maximum drawdown** | Maior magnitude positiva de drawdown no período, acompanhada das datas de pico, vale e eventual recuperação. |
 | **Moeda-base** | Moeda na qual os valores agregados da carteira são expressos. Conversão cambial não deve ser presumida. |
 | **Monte Carlo** | Método de simulação que gera cenários aleatórios segundo um modelo e uma seed controlável para estimar a distribuição de resultados. |
+| **Nearest-rank** | Quantil empírico sem interpolação cujo rank de base 1 é `ceil(confiança × tamanho da amostra)`. |
 | **P&L** | *Profit and Loss*; ganho ou perda em um período, cuja base de cálculo deve ser compatível com o risco previsto. |
+| **Perda histórica** | Oposto do retorno de um cenário: `perda = -retorno`. Perdas econômicas são positivas e ganhos são negativos. |
 | **Peso** | Participação de uma posição em uma base agregada. Na Fase 2, a base é explicitamente líquida ou bruta. |
 | **Peso bruto** | Valor absoluto da posição dividido pela exposição bruta da mesma moeda; é não negativo e a soma é aproximadamente 1. |
 | **Peso líquido** | Valor assinado da posição dividido pelo valor líquido da mesma moeda; pode ser negativo ou maior que 1 e não existe quando o denominador é zero. |
@@ -50,9 +52,9 @@ forem a forma mais reconhecida no mercado.
 | **Retorno simples** | `(P_t / P_{t-1}) - 1`; representa a variação percentual entre duas observações. |
 | **Stress testing** | Avaliação do impacto de choques severos, hipotéticos ou históricos, sem interpretar sua magnitude como probabilidade. |
 | **Ticker** | Identificador textual do instrumento dentro de uma fonte ou mercado. Pode não ser universalmente único sem contexto adicional. |
-| **VaR histórico** | Quantil de perdas estimado da distribuição empírica de retornos ou P&L históricos, segundo método de quantil documentado. |
+| **VaR histórico** | Na Fase 7, limiar relativo não negativo calculado pelo nearest-rank das perdas históricas; preserva também o quantil bruto, configuração, amostra e datas. |
 | **VaR paramétrico** | Estimativa de VaR derivada de uma distribuição e parâmetros assumidos, inicialmente a distribuição normal. |
-| **Value at Risk (VaR)** | Limiar de perda para um horizonte e confiança definidos. No produto, convenção de sinal, moeda, janela e método devem acompanhar todo resultado; a convenção concreta será formalizada antes da Fase 7. |
+| **Value at Risk (VaR)** | Limiar de perda para horizonte e confiança definidos. A Fase 7 usa `perda = -retorno`, nearest-rank e `VaR = max(quantil da perda, 0)`; janela, método, unidade e datas acompanham o resultado. |
 | **Valor de mercado** | Quantidade multiplicada pelo preço de referência, antes de conversões ou multiplicadores que deverão ser explícitos. |
 | **Volatilidade** | Raiz da variância dos retornos. Na Fase 6, o estimador amostral é padrão e a anualização diária usa fator explícito, inicialmente 252. |
 
@@ -108,8 +110,9 @@ forem a forma mais reconhecida no mercado.
 
 Antes da implementação correspondente, devem ser definidos e documentados:
 
-- convenção de sinal de perdas, VaR e Expected Shortfall;
-- método de quantil empírico;
+- definição da cauda e tratamento de empates do Expected Shortfall, preservando a
+  convenção de perda da Fase 7;
+- métodos de quantil empírico além de nearest-rank;
 - calendários e fatores de anualização alternativos ao padrão diário 252;
 - calendários, timezone de observações e alinhamentos além das políticas locais da
   Fase 5;

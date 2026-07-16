@@ -132,15 +132,20 @@ core. O contrato detalhado está em [dados de mercado locais](../models/market-d
 ### Analytics e risco
 
 A Fase 6 entrega funções puras em `core.analytics` para retornos, estatísticas,
-matrizes, drawdown e concentração. Elas recebem `PriceSeries`, `AlignedPriceTable`,
-`ReturnSeries`, `ReturnTable` ou `Portfolio` validados e devolvem contratos imutáveis.
+matrizes, drawdown e concentração. A Fase 7 acrescenta `core.risk` com VaR histórico
+nearest-rank sobre `ReturnSeries` diária, configuração imutável e amostra de perdas
+auditável. Esses módulos recebem contratos validados e devolvem resultados imutáveis.
 O contexto `Decimal` local tem 34 dígitos e não altera configuração global.
 
 O core não lê arquivos, providers ou cache e não conhece Qt. Falhas quantitativas
-esperadas usam `AnalyticsError` com códigos estruturados. Fórmulas, estimadores,
-hipóteses e tolerâncias estão em
-[analytics básicos](../concepts/basic-analytics.md). Uma interface comum de modelos de
-risco só será extraída quando ao menos dois modelos reais demonstrarem a abstração.
+esperadas usam `AnalyticsError` ou `RiskCalculationError` com códigos estruturados.
+Fórmulas, estimadores, hipóteses e tolerâncias estão em
+[analytics básicos](../concepts/basic-analytics.md) e
+[VaR histórico](../concepts/historical-var.md). As convenções de perda, quantil,
+horizonte e unidade são formalizadas no
+[ADR-004](../decisions/ADR-004-historical-var-conventions.md). Uma interface comum de
+modelos de risco só será extraída quando ao menos dois modelos reais demonstrarem a
+abstração.
 
 ### Aplicação
 
@@ -193,9 +198,10 @@ registrada no [ADR-002](../decisions/ADR-002-use-of-pyside6.md).
 | `RiskResult` | métrica, valor, unidade, modelo, parâmetros e problemas |
 | `ExecutionRecord` | evidência reproduzível de uma execução futura |
 
-Os contratos de carteira foram concretizados na Fase 2, os de mercado na Fase 5 e os
-analytics descritivos na Fase 6. Os demais continuam como vocabulário inicial e só
-devem incluir campos usados por casos de uso reais.
+Os contratos de carteira foram concretizados na Fase 2, os de mercado na Fase 5, os
+analytics descritivos na Fase 6 e a configuração/resultado do VaR histórico na Fase 7.
+Os demais continuam como vocabulário inicial e só devem incluir campos usados por
+casos de uso reais.
 
 ## Validação e tratamento de falhas
 
@@ -307,11 +313,13 @@ zeus-risk-engine/
 │   ├── architecture/
 │   │   └── overview.md
 │   ├── concepts/              # fórmulas e interpretação, a partir da Fase 6
-│   │   └── basic-analytics.md
+│   │   ├── basic-analytics.md
+│   │   └── historical-var.md
 │   ├── decisions/
 │   │   ├── ADR-001-separation-of-ui-and-core.md
 │   │   ├── ADR-002-use-of-pyside6.md
-│   │   └── ADR-003-decimal-and-portfolio-weights.md
+│   │   ├── ADR-003-decimal-and-portfolio-weights.md
+│   │   └── ADR-004-historical-var-conventions.md
 │   ├── development/
 │   │   └── roadmap.md
 │   ├── models/
@@ -342,13 +350,16 @@ zeus-risk-engine/
 │       │   ├── backtesting/
 │       │   ├── portfolio/
 │       │   ├── risk/
+│       │   │   └── historical_var.py
 │       │   └── stress/
 │       ├── domain/
-│       │   └── analytics.py
+│       │   ├── analytics.py
+│       │   └── risk.py
 │       ├── exceptions/
 │       │   ├── analytics.py
 │       │   ├── market_data.py
-│       │   └── portfolio.py
+│       │   ├── portfolio.py
+│       │   └── risk.py
 │       ├── exporters/
 │       ├── importers/
 │       │   ├── csv_portfolio.py
@@ -379,16 +390,16 @@ zeus-risk-engine/
 
 ### Política de criação incremental
 
-Até a Fase 6 foram criados a fundação executável, os domínios de carteira, mercado e
-analytics, os adapters CSV/XLSX, o pipeline local de preços e o primeiro núcleo
-quantitativo. Cada subpacote, adapter, pasta de teste ou asset futuro só será criado com
-seu primeiro conteúdo real. Isso evita estrutura ornamental e torna cada mudança
-explicável.
+Até a Fase 7 foram criados a fundação executável, os domínios de carteira, mercado,
+analytics e risco histórico, os adapters CSV/XLSX, o pipeline local de preços e o
+primeiro motor de risco. Cada subpacote, adapter, pasta de teste ou asset futuro só será
+criado com seu primeiro conteúdo real. Isso evita estrutura ornamental e torna cada
+mudança explicável.
 
 ## Decisões ainda necessárias
 
 - ADR sobre conversão para moeda-base e fontes de câmbio;
-- ADR sobre convenção de sinal de VaR e Expected Shortfall;
+- decisão sobre definição amostral da cauda e empates do Expected Shortfall;
 - ADR sobre calendários e políticas de missing values além das opções locais já
   fechadas na Fase 5;
 - ADR sobre persistência SQLite e migrações;

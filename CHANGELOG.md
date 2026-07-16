@@ -46,9 +46,18 @@ and the project intends to follow [Semantic Versioning](https://semver.org/spec/
   effective position count.
 - Mathematical analytics documentation plus unit, integration, and numerical
   regression tests over synthetic data.
+- Immutable historical VaR configuration, loss-scenario, and result contracts.
+- Nearest-rank historical VaR with positive-loss convention, exact tail-resolution
+  validation, rolling simple/log horizons, and deterministic recent-window selection.
+- Structured risk-calculation failures and reconciliation of sample, rank, quantile,
+  non-negative VaR, unit, convention, and dates.
+- ADR-004, mathematical documentation, manual example, and unit, integration, and
+  numerical regression coverage for historical VaR.
 
 ### Notes
 
 - Version `0.1.0` identifies the current pre-alpha codebase; no release tag has been
   published yet.
-- VaR, Expected Shortfall, and graphical-interface behavior are not implemented yet.
+- Expected Shortfall and graphical-interface behavior are not implemented yet.
+- Historical VaR is relative only; monetary conversion and additional empirical
+  quantile methods remain deferred.

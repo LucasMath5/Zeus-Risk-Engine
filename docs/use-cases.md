@@ -187,25 +187,31 @@ ficam visíveis; não há dependência de arquivo, provider ou PySide6 no core.
 
 ## UC-07 — Executar risco histórico
 
-**Objetivo:** estimar VaR e Expected Shortfall históricos sob uma configuração
-explícita.
+**Objetivo:** estimar VaR histórico sob uma configuração explícita; Expected
+Shortfall será acrescentado na Fase 8 sobre a mesma convenção.
 
 **Pré-condições:** série de retornos válida e observações suficientes.
 
 **Fluxo principal:**
 
-1. O sistema valida confiança, horizonte, janela e método de retorno.
-2. Seleciona a amostra aplicável.
-3. Calcula VaR histórico segundo a convenção de perda documentada.
-4. Calcula Expected Shortfall sobre a cauda correspondente.
-5. Retorna valores, convenção de sinal, amostra, parâmetros, hipóteses e avisos.
+1. O sistema valida confiança, horizonte, janela, resolução da cauda e método de
+   quantil.
+2. Compõe cenários móveis no horizonte preservando o método de retorno da série.
+3. Seleciona deterministicamente a janela mais recente.
+4. Converte cada cenário por `perda = -retorno`.
+5. Ordena as perdas e calcula VaR por nearest-rank sem interpolação.
+6. Retorna quantil bruto, VaR não negativo, convenção, unidade, amostra, parâmetros e
+   datas.
 
-**Alternativas e falhas:** amostra insuficiente ou cauda vazia não retorna `NaN`
-como sucesso; produz erro quantitativo explícito.
+**Alternativas e falhas:** confiança, horizonte, janela ou método inválido e amostra
+insuficiente não retornam zero ou `NaN` como substitutos de sucesso; produzem falha
+estruturada. Zero permanece possível quando o quantil é ganho e o piso documentado é
+aplicado.
 
-**Critérios de aceitação:** Expected Shortfall e VaR usam a mesma convenção;
-casos pequenos podem ser verificados manualmente; escolhas de quantil e
-escalonamento são documentadas antes da implementação.
+**Critérios de aceitação:** casos pequenos reconciliam perdas, ordenação, rank e VaR
+manualmente; escolhas de quantil e horizonte estão documentadas; a amostra e a
+configuração acompanham o resultado; Expected Shortfall futuro deverá reutilizar a
+mesma convenção.
 
 ## UC-08 — Interpretar e comparar resultados
 

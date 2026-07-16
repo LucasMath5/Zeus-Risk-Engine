@@ -12,10 +12,10 @@ analyzing, and monitoring the risk of financial portfolios. It is designed as a
 professional software-engineering and quantitative-finance portfolio project, with
 an emphasis on reproducibility, auditability, clear assumptions, and learning.
 
-**Current status:** Phase 6 — basic analytics. The package reads validated portfolio
-and daily-price files, aligns series, and calculates documented simple/log returns,
-constant-weight portfolio returns, descriptive statistics, covariance, correlation,
-drawdown, and gross-weight concentration. VaR is not yet implemented.
+**Current status:** Phase 7 — historical Value at Risk. The package reads validated
+portfolio and daily-price files, calculates descriptive analytics, and estimates
+documented nearest-rank historical VaR with explicit confidence, horizon, window,
+loss convention, effective sample, and dates.
 
 Author: Lucas Silva
 
@@ -53,6 +53,9 @@ The current foundation provides:
 - explicit daily annualization, cumulative wealth, drawdown, and maximum drawdown;
 - gross-weight Herfindahl concentration and effective position count;
 - immutable analytics results and structured failures without `NaN` success states;
+- immutable historical VaR configuration and result contracts;
+- rolling simple/log horizon scenarios with deterministic recent-window selection;
+- positive-loss nearest-rank historical VaR with explicit tail-resolution safeguards;
 - synthetic offline portfolio/price samples and generated XLSX test workbooks;
 - automated tests, coverage, linting, formatting, and strict type checking;
 - continuous integration on supported Python and operating-system combinations;
@@ -70,7 +73,7 @@ Zeus Risk Engine 0.1.0
 The project will add capabilities incrementally:
 
 - interactive portfolio column mapping;
-- historical and parametric VaR, Expected Shortfall, and EWMA;
+- Expected Shortfall, parametric VaR, and EWMA;
 - PySide6 portfolio and results workflows;
 - versioned projects and risk configurations;
 - backtesting, stress testing, SQLite history, and reproducible reports;
@@ -200,15 +203,16 @@ the domain and quantitative modules exist.
 - [XLSX portfolio format](docs/models/xlsx-portfolio-format.md)
 - [Local market-data format and contracts](docs/models/market-data.md)
 - [Basic analytics formulas and conventions](docs/concepts/basic-analytics.md)
+- [Historical VaR formulas and conventions](docs/concepts/historical-var.md)
+- [ADR-004: historical VaR conventions](docs/decisions/ADR-004-historical-var-conventions.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
 ## Roadmap
 
-The next planned phase is **Phase 7 — historical VaR**, introducing an explicit loss
-sign convention, confidence/horizon/window configuration, documented empirical
-quantiles, structured results, and numerical regression tests. Expected Shortfall
-remains reserved for Phase 8.
+The next planned phase is **Phase 8 — historical Expected Shortfall**, reusing the
+Phase 7 loss convention and effective sample while defining the empirical tail,
+boundary treatment, structured result, and numerical reconciliation with VaR.
 
 ## License
 
