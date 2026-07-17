@@ -12,6 +12,8 @@ jobs:
     name: Lint, types, and build
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      QT_QPA_PLATFORM: offscreen
 
     steps:
       - name: Check out repository
@@ -44,11 +46,14 @@ jobs:
         run: |
           python -m pip install --force-reinstall --no-deps dist/*.whl
           zeus-risk --version
+          python -c "from pathlib import Path; from zeus_risk.app import MainWindow, create_application; app = create_application(['smoke']); window = MainWindow(); assert window.open_project(Path('assets/samples/historical-risk-demo.zeus.json')); assert window.run_analysis(); window.close(); app.processEvents()"
 
   tests:
     name: Tests — ${{ matrix.os }} / Python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    env:
+      QT_QPA_PLATFORM: offscreen
 
     strategy:
       fail-fast: false

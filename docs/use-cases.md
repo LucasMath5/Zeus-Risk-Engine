@@ -26,6 +26,8 @@ os testes de integração e, posteriormente, os fluxos da interface.
   mediante visibilidade e ficam associados ao resultado.
 - Todo caso que produz cálculo deve retornar dados e problemas estruturados, sem
   depender de widgets.
+- As Fases 9–10 concretizam UC-01 a UC-05, a apresentação essencial de UC-07/UC-08 e
+  UC-10 no fluxo desktop; exportação de resultados e histórico continuam posteriores.
 
 ## Mapa dos casos de uso
 
@@ -40,7 +42,7 @@ os testes de integração e, posteriormente, os fluxos da interface.
 | UC-07 | Executar risco histórico | MVP | alta |
 | UC-08 | Interpretar e comparar resultados | MVP | alta |
 | UC-09 | Exportar resultados básicos | MVP | média |
-| UC-10 | Salvar e reabrir projeto | posterior | média |
+| UC-10 | Salvar e reabrir projeto | MVP | média |
 | UC-11 | Consultar histórico de execuções | posterior | média |
 | UC-12 | Cancelar uma tarefa longa | posterior | média |
 | UC-13 | Executar backtesting | posterior | média |
@@ -174,7 +176,7 @@ financeira própria.
    acumulada, drawdown, maximum drawdown e concentração bruta.
 5. Produz objetos de resultado com método, frequência, estimador, amostra,
    anualização, datas ou pesos aplicáveis.
-6. A interface futura apresenta a síntese sem recalcular as métricas.
+6. A camada de apresentação consome a síntese sem recalcular as métricas.
 
 **Alternativas e falhas:** denominador líquido zero, moedas ou séries incompatíveis,
 preço alinhado ausente, correlação de série constante, observações insuficientes,
@@ -251,12 +253,30 @@ impossível preserva o resultado em memória e informa uma falha específica.
 **Critérios de aceitação:** a exportação não recalcula métricas; um arquivo gerado
 pode ser lido por teste de integração e reconciliado com o resultado original.
 
+## UC-10 — Salvar e reabrir projeto
+
+**Objetivo:** preservar e restaurar as referências e configurações do fluxo desktop.
+
+**Pré-condições:** carteira válida, preços selecionados e configuração representável.
+
+**Fluxo principal:**
+
+1. O usuário escolhe salvar ou salvar como.
+2. O sistema cria um snapshot imutável sem incorporar carteira ou preços.
+3. O adapter grava JSON UTF-8 schema `1.0` por substituição atômica.
+4. Alterações posteriores aparecem por `*` no título.
+5. Ao abrir, o sistema valida schema, campos, referências, configuração e carteira.
+6. Somente depois da validação completa a janela substitui seu estado atual.
+
+**Alternativas e falhas:** JSON inválido, schema desconhecido, campo ausente, extra ou
+duplicado, referência removida, configuração não representável e carteira alterada
+produzem código estruturado. Uma falha não apaga o projeto já aberto.
+
+**Critérios de aceitação:** round trip preserva entradas e parâmetros; caminhos
+relativos independem do diretório de execução; gravação interrompida não é sucesso;
+dados financeiros e resultados não são copiados implicitamente.
+
 ## Casos posteriores
-
-### UC-10 — Salvar e reabrir projeto
-
-Persistir carteira, referências de dados, configurações e estado compatível com
-schema versionado. A reabertura valida versão e não mascara dados ausentes.
 
 ### UC-11 — Consultar histórico de execuções
 

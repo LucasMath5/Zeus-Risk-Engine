@@ -30,6 +30,7 @@ from zeus_risk.domain.market_data import (
 )
 from zeus_risk.domain.portfolio import Portfolio, PortfolioValuation, PositionWeight
 from zeus_risk.domain.position import Position
+from zeus_risk.domain.project import PROJECT_SCHEMA_VERSION, DesktopProject
 from zeus_risk.domain.risk import (
     EmpiricalQuantileMethod,
     HistoricalExpectedShortfallResult,
@@ -50,6 +51,7 @@ __all__ = [
     "ConcentrationResult",
     "Currency",
     "DescriptiveStatistics",
+    "DesktopProject",
     "DomainValidationError",
     "DrawdownObservation",
     "DrawdownResult",
@@ -69,6 +71,7 @@ __all__ = [
     "MissingValuePolicy",
     "Portfolio",
     "PortfolioValuation",
+    "PROJECT_SCHEMA_VERSION",
     "Position",
     "PositionWeight",
     "PriceObservation",

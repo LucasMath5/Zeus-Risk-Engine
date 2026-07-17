@@ -71,6 +71,8 @@ forem a forma mais reconhecida no mercado.
 | **ImportResult** | Resultado estruturado de importação que reúne proveniência, mapeamentos, linhas revisáveis, resumo, problemas e carteira aceita parcial ou integralmente. |
 | **ImportRow** | Representação de uma linha importada com número físico, valores originais, status, problemas e posição opcional. |
 | **ImportStatus** | Estado `valid`, `warning` ou `error` atribuído a uma linha após parsing e validação. |
+| **Projeto desktop (`DesktopProject`)** | Snapshot imutável com nome, referências aos arquivos, worksheet, método e configuração histórica; não incorpora os dados nem resultados na Fase 10. |
+| **Arquivo `*.zeus.json`** | Representação UTF-8 do projeto desktop com schema versionado, campos estritos e referências resolvidas a partir de sua própria pasta. |
 | **Informação (`info`)** | Observação contextual que não indica degradação ou invalidade. |
 | **Metadados de mercado (`MarketDataMetadata`)** | Provider, fonte, hash, frequência, instante de carga, intervalo, contagens e tratamento de ausências de um conjunto de séries. |
 | **Missing value** | Observação ausente. Remoção, preenchimento ou alinhamento deve seguir uma política declarada e registrada. |
@@ -86,6 +88,7 @@ forem a forma mais reconhecida no mercado.
 | **Série de preços (`PriceSeries`)** | Sequência diária não vazia de observações para uma `PriceSeriesKey`, com datas únicas e crescentes. |
 | **Chave de série (`PriceSeriesKey`)** | Identidade normalizada `(ticker, currency)` de uma série de preços. |
 | **Schema version** | Identificador da estrutura de um arquivo ou mensagem persistida, usado para validar compatibilidade e migração. |
+| **Alteração não salva (`dirty state`)** | Estado em que as entradas ou parâmetros da janela diferem do último projeto salvo/aberto, indicado por `*` no título. |
 | **Severidade** | Classificação `info`, `warning` ou `error` atribuída a um problema de validação. |
 | **Aviso (`warning`)** | Problema não fatal que pode reduzir qualidade ou interpretação e deve acompanhar o resultado. |
 | **Worksheet** | Planilha nomeada dentro de um workbook XLSX; uma importação processa exatamente uma worksheet e preserva seu nome. |
@@ -97,12 +100,14 @@ forem a forma mais reconhecida no mercado.
 | **Adapter** | Implementação que traduz entre um contrato interno e uma tecnologia externa, como CSV, XLSX, SQLite ou Qt. |
 | **ADR** | *Architecture Decision Record*; registro versionado do contexto, decisão, alternativas e consequências de uma escolha arquitetural. |
 | **Camada de aplicação** | Coordena casos de uso, transações e chamadas a contratos, sem conter fórmulas quantitativas ou detalhes de widgets. |
+| **Caso de uso (`PortfolioRiskWorkflow`)** | Serviço síncrono e independente de Qt que coordena importação, preços locais, retornos e risco histórico para a fronteira desktop da Fase 9. |
 | **Core quantitativo** | Código de domínio e cálculo financeiro/estatístico executável sem interface gráfica. |
 | **Domínio** | Modelos, invariantes, tipos de valor e regras que expressam o problema financeiro. |
 | **DTO** | Objeto de transporte com contrato explícito usado em fronteiras; não substitui automaticamente uma entidade de domínio. |
 | **Decimal** | Tipo numérico usado no domínio para quantidade, preço, valor e pesos, construído preferencialmente a partir de texto para evitar herdar aproximações binárias de `float`. |
 | **Port** | Protocolo ou interface definido pelo lado consumidor para acessar uma capacidade externa sem depender de sua implementação. |
 | **Provider de dados de mercado** | Port que fornece séries e metadados; implementações futuras podem usar arquivos, demonstrações, cache ou APIs. |
+| **Qt model/view** | Padrão em que um `QAbstractTableModel` adapta dados tipados para uma view sem criar regra financeira ou um widget por célula. |
 | **Repository** | Port orientado à persistência e recuperação de entidades ou agregados, introduzido apenas quando houver caso de uso real. |
 | **Worker** | Componente que executa operação demorada fora do fluxo da interface e comunica progresso, cancelamento, resultado e falha. |
 

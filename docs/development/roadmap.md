@@ -25,8 +25,8 @@
 | 6 | analytics básicos | Fases 2 e 5 | retornos, volatilidade, correlação, drawdown e concentração documentados | concluída |
 | 7 | VaR histórico | Fase 6 | configuração, convenção, quantil, resultado e testes numéricos | concluída |
 | 8 | Expected Shortfall | Fase 7 | cauda, comparação com VaR, documentação e testes | concluída |
-| 9 | interface inicial | Fases 3 e 6–8 | importação, validação, posições e resultados em PySide6 | planejada |
-| 10 | projetos e configurações | Fase 9 | salvar/carregar e JSON com schema validado | planejada |
+| 9 | interface inicial | Fases 3 e 6–8 | importação, validação, posições e resultados em PySide6 | concluída |
+| 10 | projetos e configurações | Fase 9 | salvar/carregar e JSON com schema validado | concluída |
 | 11 | VaR paramétrico normal | Fase 6 | covariância, quantil normal e documentação reconciliados | planejada |
 | 12 | EWMA | Fase 11 | lambda, recorrência, comparação e regressão numérica | planejada |
 | 13 | backtesting | Fases 7, 11 e 12 | exceções, Kupiec, Christoffersen, traffic light e interpretação | planejada |
@@ -780,7 +780,7 @@ docs/decisions/ADR-005-historical-expected-shortfall-conventions.md
 feat(risk): add historical expected shortfall
 ```
 
-## Próxima etapa recomendada — Fase 9
+## Fase 9 — Interface inicial concluída
 
 ### Objetivo
 
@@ -788,7 +788,7 @@ Implementar a primeira interface desktop PySide6 funcional para importar e valid
 carteira, visualizar posições, configurar o risco histórico e apresentar VaR e
 Expected Shortfall sem mover regras quantitativas para a camada visual.
 
-### Funcionalidades inicialmente previstas
+### Funcionalidades incluídas
 
 - bootstrap da aplicação PySide6 e janela principal;
 - fluxo para selecionar CSV ou XLSX e worksheet quando aplicável;
@@ -808,43 +808,162 @@ Expected Shortfall sem mover regras quantitativas para a camada visual.
 - persistência SQLite, histórico e relatórios;
 - identidade visual final ou dashboards avançados.
 
-### Decisões a fechar antes da implementação
+### Decisões fechadas na Fase 9
 
-- dependência e versão mínima de PySide6 compatível com Python suportado;
-- composição inicial da aplicação e fronteira dos casos de uso;
-- navegação por páginas, abas ou fluxo orientado a etapas;
-- models Qt necessários para posições e problemas sem duplicar o domínio;
-- política de execução síncrona limitada antes dos workers da Fase 14;
-- conjunto mínimo de estados e mensagens testáveis em modo offscreen.
+- PySide6 `>=6.11.1,<6.12`, compatível com a faixa Python testada pelo projeto;
+- `PortfolioRiskWorkflow` síncrono e independente de Qt como fronteira da aplicação;
+- janela única com abas sequenciais para carteira e risco;
+- `QAbstractTableModel` somente leitura para posições e problemas;
+- execução síncrona limitada aos arquivos locais pequenos da fase, com botão bloqueado;
+- estados vazio, pronto, executando, sucesso e falha, testados em modo offscreen;
+- detalhes e alternativas formalizados no ADR-006.
 
-### Arquivos inicialmente previstos
+### Arquivos entregues
 
 ```text
 src/zeus_risk/app/__init__.py
 src/zeus_risk/app/application.py
 src/zeus_risk/app/main_window.py
-src/zeus_risk/app/models/
+src/zeus_risk/app/models.py
 src/zeus_risk/app/views/
 src/zeus_risk/application/
-tests/gui/
+src/zeus_risk/application/portfolio_risk.py
+tests/unit/application/test_portfolio_risk.py
+tests/gui/conftest.py
+tests/gui/test_qt_models.py
+tests/gui/test_main_window.py
+assets/samples/risk_portfolio.csv
 docs/tutorials/first-desktop-workflow.md
 docs/decisions/ADR-006-initial-desktop-composition.md
 ```
 
-### Critérios de saída previstos
+### Evidências de conclusão
 
-- a aplicação abre e encerra com segurança em ambiente desktop suportado;
-- o usuário importa uma carteira e visualiza problemas e posições sem terminal;
-- o pipeline local produz VaR e ES visíveis com configuração e unidade;
+- a aplicação abre e encerra com segurança no smoke test Qt offscreen;
+- o usuário importa CSV/XLSX e visualiza problemas e posições sem terminal;
+- o pipeline local de exemplo produz VaR e ES visíveis com configuração e unidade;
 - a UI não recalcula retornos, VaR ou ES;
 - falhas estruturadas são traduzidas em mensagens compreensíveis sem perder códigos;
-- testes GUI executam em modo offscreen e não exigem rede;
-- Ruff, mypy, testes, cobertura, build e smoke test permanecem aprovados.
+- testes GUI executam em modo offscreen e não exigem rede ou diálogos reais;
+- o tutorial reconcilia o exemplo de duas posições e dois cenários;
+- 250 testes passam no Python 3.12 local com 90% de cobertura total;
+- Ruff e formatação aprovados em 89 arquivos; mypy estrito aprovado;
+- wheel e source distribution são construídos, o wheel reinstalado passa pela CLI e
+  pelo smoke test Qt, e a inspeção nativa confirma contraste e layout.
 
 ### Commit sugerido para a Fase 9
 
 ```text
 feat(ui): add initial portfolio risk workflow
+```
+
+## Fase 10 — Projetos e configurações concluída
+
+### Objetivo
+
+Salvar e reabrir o estado mínimo do fluxo desktop em um projeto JSON local, com schema
+versionado, validação explícita e referências portáveis quando possível.
+
+### Funcionalidades incluídas
+
+- contrato imutável de projeto e configuração histórica;
+- serialização JSON com `schema_version` e validação de campos desconhecidos;
+- salvar como, abrir e indicação de alterações não salvas na janela;
+- referências à carteira e aos preços sem incorporar dados confidenciais por padrão;
+- migração explícita ou erro compreensível para schema incompatível;
+- testes unitários, integração de round trip e estados GUI offscreen.
+
+### Decisões fechadas na Fase 10
+
+- extensão recomendada `*.zeus.json` e schema inicial `1.0`;
+- `DesktopProject` imutável no domínio, sem dependência de Qt ou JSON;
+- `ProjectWorkflow` como caso de uso e `JsonProjectStore` como adapter;
+- arquivo referencial, sem copiar posições, preços ou resultados;
+- caminhos relativos somente para referências dentro da pasta do projeto;
+- confiança serializada como string decimal e inteiros JSON estritos;
+- campos exatos, chaves duplicadas rejeitadas e limite de um megabyte;
+- arquivo temporário sincronizado e substituição atômica no salvamento;
+- abertura valida todas as fronteiras antes de substituir o estado atual;
+- alternativas e consequências formalizadas no ADR-007.
+
+### Fora da Fase 10
+
+- banco SQLite, histórico de execuções e autenticação;
+- autosave opaco ou armazenamento de carteiras sem consentimento;
+- VaR paramétrico, EWMA, workers, relatórios e empacotamento final.
+
+### Arquivos entregues
+
+```text
+src/zeus_risk/domain/project.py
+src/zeus_risk/exceptions/project.py
+src/zeus_risk/projects/json_store.py
+src/zeus_risk/application/project_workflow.py
+src/zeus_risk/app/main_window.py
+src/zeus_risk/app/views/risk_page.py
+tests/unit/domain/test_project.py
+tests/unit/exceptions/test_project_error.py
+tests/unit/projects/test_json_store.py
+tests/unit/application/test_project_workflow.py
+tests/integration/test_project_round_trip.py
+tests/gui/test_main_window.py
+assets/samples/historical-risk-demo.zeus.json
+docs/models/project-file.md
+docs/tutorials/save-and-reopen-project.md
+docs/decisions/ADR-007-versioned-project-json.md
+```
+
+### Evidências de conclusão
+
+- round trip preserva nome, referências, worksheet, retorno e configuração;
+- o exemplo versionado abre e reproduz o pipeline histórico sem rede;
+- campos ausentes, desconhecidos, duplicados ou incompatíveis falham por código;
+- referências ausentes e configurações fora dos controles não são mascaradas;
+- salvar/abrir, `Ctrl+S`, salvar como e indicador `*` funcionam na interface;
+- abrir projeto inválido mantém o estado anterior;
+- 273 testes passam no Python 3.14 local com 90% de cobertura total;
+- Ruff e formatação aprovados em 99 arquivos; mypy estrito aprovado;
+- wheel e source distribution são construídos; o wheel inclui os módulos e o sdist
+  inclui também o projeto JSON de demonstração;
+- o wheel reinstalado abre o projeto de demonstração e reproduz VaR `0,0000%` e ES
+  `0,0328%` no smoke test Qt offscreen;
+- inspeção visual nativa confirma o rótulo da Fase 10 e o fluxo restaurado.
+
+### Commit sugerido para a Fase 10
+
+```text
+feat(projects): add versioned desktop project files
+```
+
+## Próxima etapa recomendada — Fase 11
+
+### Objetivo
+
+Implementar VaR paramétrico normal relativo como segundo modelo real, reutilizando
+retornos e covariância existentes, com hipóteses, quantil, sinal, horizonte e
+reconciliação matematicamente documentados.
+
+### Funcionalidades inicialmente previstas
+
+- configuração e resultado imutáveis do VaR paramétrico;
+- média e volatilidade da carteira sob convenção explícita;
+- quantil normal sem introduzir dependência desnecessária de framework tabular;
+- escolha documentada entre VaR com média zero ou média estimada;
+- regra de horizonte e unidade relativa;
+- falhas estruturadas para variância, confiança ou amostra inválida;
+- exemplo manual, regressão numérica e comparação conceitual com VaR histórico;
+- integração ao workflow e à interface somente após o contrato do modelo estar validado.
+
+### Fora da Fase 11
+
+- EWMA, distribuições não normais, Monte Carlo e backtesting;
+- VaR monetário, conversão cambial e decomposição de risco;
+- seleção genérica prematura de plugins de modelos.
+
+### Commit sugerido para a Fase 11
+
+```text
+feat(risk): add parametric normal var
 ```
 
 ## Template obrigatório para cada fase

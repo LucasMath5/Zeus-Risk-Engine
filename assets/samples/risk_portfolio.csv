@@ -1,0 +1,3 @@
+ticker,quantity,price,asset_class,currency,sector
+ZEUS_EQ1,1,100,equity,BRL,Energy
+ZEUS_EQ2,2,50,equity,BRL,Materials

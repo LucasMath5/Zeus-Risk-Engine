@@ -149,7 +149,6 @@ disso.
 ## Capacidades planejadas depois do primeiro fluxo
 
 - mapeamento interativo de colunas importadas;
-- configurações e projetos persistentes;
 - VaR paramétrico normal e EWMA;
 - backtesting com Kupiec, Christoffersen e traffic light;
 - stress testing hipotético e, com fontes adequadas, histórico;

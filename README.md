@@ -1,7 +1,7 @@
 # Zeus Risk Engine
 
-> **Temporary visual identity:** geometric lightning bolt + letter Z. A final logo
-> will be introduced with the desktop assets, without blocking the engineering work.
+> **Temporary visual identity:** the desktop header uses the letter Z while a final,
+> distributable icon set remains intentionally deferred.
 
 [![Quality](https://github.com/LucasMath5/Zeus-Risk-Engine/actions/workflows/quality.yml/badge.svg)](https://github.com/LucasMath5/Zeus-Risk-Engine/actions/workflows/quality.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB.svg)](https://www.python.org/)
@@ -12,10 +12,9 @@ analyzing, and monitoring the risk of financial portfolios. It is designed as a
 professional software-engineering and quantitative-finance portfolio project, with
 an emphasis on reproducibility, auditability, clear assumptions, and learning.
 
-**Current status:** Phase 8 — historical Expected Shortfall. The package reads
-validated portfolio and daily-price files, calculates descriptive analytics, and
-estimates documented nearest-rank historical VaR and rank-tail Expected Shortfall with
-explicit configuration, samples, conventions, units, and dates.
+**Current status:** Phase 10 — projects and configurations. The desktop workflow now
+saves and reopens strict, versioned `*.zeus.json` project files that restore portfolio
+and local-price references plus the complete historical-risk configuration.
 
 Author: Lucas Silva
 
@@ -58,6 +57,16 @@ The current foundation provides:
 - positive-loss nearest-rank historical VaR with explicit tail-resolution safeguards;
 - historical Expected Shortfall over ranks beyond VaR with deterministic tie handling;
 - reconciled VaR/ES results preserving raw loss thresholds, tail means, and samples;
+- a Qt Widgets desktop entry point with a guided portfolio-to-risk workflow;
+- read-only model/view tables for accepted positions and structured validation issues;
+- explicit confidence, horizon, window, price-source, readiness, success, and failure states;
+- a PySide-free application service that composes import, market data, analytics, VaR, and ES;
+- headless GUI tests for bootstrap, table models, workflow success, and structured failures;
+- immutable `DesktopProject` snapshots and strict schema `1.0` JSON persistence;
+- atomic project saves, exact-field validation, duplicate detection, and size safeguards;
+- relative references for files inside the project tree and explicit missing-file errors;
+- desktop open/save/save-as actions and a visible unsaved-change marker;
+- a ready-to-open synthetic project reproducing the historical-risk example;
 - synthetic offline portfolio/price samples and generated XLSX test workbooks;
 - automated tests, coverage, linting, formatting, and strict type checking;
 - continuous integration on supported Python and operating-system combinations;
@@ -76,19 +85,19 @@ The project will add capabilities incrementally:
 
 - interactive portfolio column mapping;
 - parametric VaR, parametric Expected Shortfall, and EWMA;
-- PySide6 portfolio and results workflows;
-- versioned projects and risk configurations;
+- richer result exploration and charts;
 - backtesting, stress testing, SQLite history, and reproducible reports;
 - Monte Carlo simulation and controlled model extensibility.
 
 The complete sequence and exit criteria are documented in the
 [development roadmap](docs/development/roadmap.md).
 
-## Demonstration and screenshots
+## Demonstration
 
-Screenshots and a reproducible demonstration will be added when the first PySide6
-workflow is implemented. The project deliberately avoids mock screenshots that could
-be mistaken for currently available behavior.
+The [first desktop workflow tutorial](docs/tutorials/first-desktop-workflow.md) and
+[project tutorial](docs/tutorials/save-and-reopen-project.md) use only synthetic files
+in `assets/samples`. You can directly open
+`assets/samples/historical-risk-demo.zeus.json` in the real application.
 
 ## Architecture
 
@@ -117,8 +126,9 @@ enforceable dependency rules.
 - Git for cloning the repository;
 - internet access to install Python dependencies; execution remains offline.
 
-Runtime dependencies are limited to `openpyxl` and `defusedxml` for the XLSX adapter.
-Basic commands, imports, tests, and examples do not call external services.
+Runtime dependencies are `openpyxl` and `defusedxml` for the XLSX adapter plus PySide6
+for the desktop application. Basic commands, imports, tests, examples, and the local
+risk workflow do not call external services.
 
 ## Installation
 
@@ -160,20 +170,31 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-PySide6 is intentionally absent from this phase and will be added with the first
-graphical workflow.
-
 ## Execution
 
-After installation, both commands are equivalent:
+Start the desktop application:
+
+```bash
+zeus-risk-gui
+```
+
+The module entry point is equivalent:
+
+```bash
+python -m zeus_risk.app
+```
+
+The minimal CLI remains available for installation and version smoke tests:
 
 ```bash
 zeus-risk --version
 python -m zeus_risk --version
 ```
 
-Run either command without arguments to display the current help. Portfolio import and
-risk commands are not exposed until their domain and use cases have automated tests.
+Follow the [desktop tutorial](docs/tutorials/first-desktop-workflow.md) to run the
+included portfolio and price samples through VaR and Expected Shortfall.
+The [project tutorial](docs/tutorials/save-and-reopen-project.md) explains save,
+reopen, portability, and common schema errors.
 
 ## Tests and quality
 
@@ -204,19 +225,24 @@ the domain and quantitative modules exist.
 - [CSV portfolio format](docs/models/csv-portfolio-format.md)
 - [XLSX portfolio format](docs/models/xlsx-portfolio-format.md)
 - [Local market-data format and contracts](docs/models/market-data.md)
+- [Versioned desktop-project format](docs/models/project-file.md)
 - [Basic analytics formulas and conventions](docs/concepts/basic-analytics.md)
 - [Historical VaR formulas and conventions](docs/concepts/historical-var.md)
 - [Historical Expected Shortfall formulas](docs/concepts/historical-expected-shortfall.md)
+- [First desktop workflow tutorial](docs/tutorials/first-desktop-workflow.md)
+- [Save and reopen a project](docs/tutorials/save-and-reopen-project.md)
 - [ADR-004: historical VaR conventions](docs/decisions/ADR-004-historical-var-conventions.md)
 - [ADR-005: historical Expected Shortfall conventions](docs/decisions/ADR-005-historical-expected-shortfall-conventions.md)
+- [ADR-006: initial desktop composition](docs/decisions/ADR-006-initial-desktop-composition.md)
+- [ADR-007: versioned project JSON](docs/decisions/ADR-007-versioned-project-json.md)
 - [Contribution guide](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
 ## Roadmap
 
-The next planned phase is **Phase 9 — initial desktop interface**, introducing the
-first PySide6 workflow for portfolio import, validation, positions, risk parameters,
-and basic VaR/Expected Shortfall results without moving calculations into widgets.
+The next planned phase is **Phase 11 — parametric normal VaR**, introducing a second
+risk model with an explicit normal-distribution assumption, portfolio covariance,
+documented quantile convention, and numerical regression tests.
 
 ## License
 

@@ -28,6 +28,11 @@ core, o domínio, importadores, providers, repositories e cálculos não importa
 Qt. Models, signals, slots, threads e recursos Qt serão introduzidos somente nas
 fases que possuírem fluxos de interface reais.
 
+A Fase 9 declara `PySide6>=6.11.1,<6.12`. A faixa fixa a linha menor validada com
+Python 3.11–3.14 e evita aceitar silenciosamente uma futura linha Qt sem nova rodada de
+testes. Os wheels publicados incluem os binários Qt necessários; a revisão de licença
+e empacotamento continua obrigatória antes de uma distribuição final.
+
 A interface seguirá estas orientações:
 
 - preferir model/view para tabelas a criar um widget completo por célula;
@@ -102,8 +107,8 @@ visual para revisão de posições, problemas e resultados.
 
 ## Impacto nas fases
 
-- Fase 1 registra a dependência e prepara pontos de entrada, sem exigir janela.
-- Fase 9 cria a primeira interface sobre casos de uso já testados.
+- Fase 1 registra a decisão, sem declarar a dependência antecipadamente.
+- Fase 9 declara a dependência e cria a primeira interface sobre casos de uso testados.
 - Fase 14 formaliza workers, progresso, cancelamento e encerramento seguro.
 - Fase 19 valida empacotamento, plugins Qt, recursos e instalador.
 
@@ -119,3 +124,4 @@ independência definida no ADR-001.
 - [Visão geral da arquitetura](../architecture/overview.md)
 - [ADR-001 — Separação entre interface e núcleo](ADR-001-separation-of-ui-and-core.md)
 - [Roadmap](../development/roadmap.md)
+- [ADR-006 — Composição desktop inicial](ADR-006-initial-desktop-composition.md)

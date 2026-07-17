@@ -2,9 +2,9 @@
 
 ## Estado
 
-- **Versão do documento:** 0.1
-- **Data:** 2026-07-15
-- **Estado:** arquitetura incremental atualizada até a Fase 6
+- **Versão do documento:** 0.3
+- **Data:** 2026-07-16
+- **Estado:** arquitetura incremental atualizada até a Fase 10
 - **Escopo:** limites, responsabilidades, dependências e estrutura-alvo
 
 ## Objetivos arquiteturais
@@ -88,6 +88,7 @@ Essa decisão é formalizada no
 | `application` | casos de uso, orquestração, ports, políticas de fluxo e DTOs de fronteira | fórmulas financeiras, SQL, detalhes visuais |
 | `importers` | leitura, normalização e tradução de formatos de carteira | decisão de habilitar botões ou renderização |
 | `market_data` | providers, alinhamento, cache e metadados de séries | regras da interface |
+| `projects` | parsing e gravação atômica do schema JSON de projeto | regra quantitativa ou estado de widget |
 | `repositories` | implementações de persistência futura | regra quantitativa |
 | `exporters` | transformação de resultados estruturados em formatos externos | recálculo de métricas |
 | `infrastructure` | logging, relógio, IDs, hashing e composição tecnológica | regra de domínio |
@@ -153,17 +154,29 @@ abstração.
 
 ### Aplicação
 
-Cada fluxo importante terá um caso de uso explícito, por exemplo
-`ImportPortfolio`, `LoadMarketData` e `RunRiskAnalysis`. O caso de uso coordena
-ports, captura apenas exceções que sabe traduzir e retorna um resultado adequado
-à fronteira sem importar PySide6.
+A Fase 9 entrega `PortfolioRiskWorkflow`, que seleciona o importador CSV/XLSX e compõe
+provider CSV, alinhamento, retornos da carteira, VaR e Expected Shortfall. O DTO
+`HistoricalRiskAnalysis` reconcilia dados, retornos e risco para a fronteira. Ambos são
+síncronos, testáveis sem ambiente gráfico e não importam PySide6.
+
+A Fase 10 acrescenta `ProjectWorkflow`, que cria snapshots `DesktopProject` e coordena
+`JsonProjectStore`. O caso de uso não conhece diálogos; o adapter não conhece widgets.
+O schema, a resolução de referências e as falhas estão documentados em
+[formato de projeto](../models/project-file.md).
 
 ### Desktop
 
-Views exibem estado; controllers ou presenters ligam sinais a casos de uso;
-models Qt adaptam coleções para tabelas; workers executam tarefas longas. A
-interface nunca recalcula um resultado recebido. A adoção de PySide6 está
-registrada no [ADR-002](../decisions/ADR-002-use-of-pyside6.md).
+`MainWindow` liga seletores de arquivo e ações ao caso de uso; `PortfolioPage` e
+`RiskPage` exibem estado; `PositionTableModel` e `IssueTableModel` adaptam coleções
+imutáveis. A interface formata, mas nunca recalcula um resultado recebido. A Fase 9
+usa execução síncrona limitada; workers permanecem para a Fase 14. A adoção e a
+composição estão registradas no [ADR-002](../decisions/ADR-002-use-of-pyside6.md) e
+no [ADR-006](../decisions/ADR-006-initial-desktop-composition.md).
+
+Na Fase 10, a janela mantém caminho, nome e indicador de alteração do projeto. Abrir
+valida JSON, referências, configuração e carteira antes de substituir o estado atual.
+Salvar coleta um snapshot pelo caso de uso; nenhum widget serializa JSON. A decisão
+está no [ADR-007](../decisions/ADR-007-versioned-project-json.md).
 
 ## Fluxo de dados principal
 
@@ -179,6 +192,9 @@ registrada no [ADR-002](../decisions/ADR-002-use-of-pyside6.md).
 8. O core retorna objetos de resultado sem conhecer tela, arquivo ou banco.
 9. A apresentação renderiza; exporters e repositories recebem o mesmo resultado
    estruturado sem recalculá-lo.
+10. Ao salvar, a apresentação cria um `DesktopProject` e o adapter grava JSON atômico.
+11. Ao abrir, caminhos relativos são resolvidos pela pasta do projeto e todas as
+    fronteiras são revalidadas antes da restauração visual.
 
 ## Contratos de dados
 
@@ -198,6 +214,8 @@ registrada no [ADR-002](../decisions/ADR-002-use-of-pyside6.md).
 | `ConcentrationResult` | pesos brutos, HHI e quantidade efetiva de posições |
 | `HistoricalVaRResult` | configuração, amostra, rank, quantil, VaR, unidade, convenção e datas |
 | `HistoricalExpectedShortfallResult` | VaR associado, cauda empírica, média bruta e ES reconciliado |
+| `HistoricalRiskAnalysis` | dados carregados, retornos da carteira e resultado VaR/ES reconciliados para apresentação |
+| `DesktopProject` | nome, referências de entrada, worksheet, método e configuração restaurável |
 | `RiskConfiguration` | parâmetros validados e compatíveis com um schema |
 | `ValidationIssue` | severidade, código, mensagem e localização de um problema |
 | `ImportResult` | linhas/posições, problemas e resumo da importação |
@@ -205,9 +223,10 @@ registrada no [ADR-002](../decisions/ADR-002-use-of-pyside6.md).
 | `ExecutionRecord` | evidência reproduzível de uma execução futura |
 
 Os contratos de carteira foram concretizados na Fase 2, os de mercado na Fase 5, os
-analytics descritivos na Fase 6, a configuração/resultado do VaR histórico na Fase 7
-e o resultado de Expected Shortfall na Fase 8. Os demais continuam como vocabulário
-inicial e só devem incluir campos usados por casos de uso reais.
+analytics descritivos na Fase 6, a configuração/resultado do VaR histórico na Fase 7,
+o resultado de Expected Shortfall na Fase 8, a composição de análise na Fase 9 e o
+projeto restaurável na Fase 10. Os demais continuam como vocabulário inicial e só
+devem incluir campos usados por casos de uso reais.
 
 ## Validação e tratamento de falhas
 
@@ -243,8 +262,8 @@ o mesmo caso de uso em CLI ou teste.
 ## Persistência, configuração e cache
 
 - **Fase inicial:** arquivos locais e objetos em memória.
-- **Configurações:** JSON com `schema_version`, validação e migrações explícitas
-  quando necessário.
+- **Projetos/configurações:** JSON schema `1.0`, campos exatos, referências relativas
+  ou absolutas, gravação atômica e migrações explícitas quando necessárias.
 - **Cache de mercado:** JSON schema 1 endereçado pelo SHA-256 dos bytes da fonte;
   metadados, séries, política e avisos são preservados e revalidados na leitura.
 - **Persistência posterior:** SQLite atrás de repositories, com transações e
@@ -327,12 +346,15 @@ zeus-risk-engine/
 │   │   ├── ADR-002-use-of-pyside6.md
 │   │   ├── ADR-003-decimal-and-portfolio-weights.md
 │   │   ├── ADR-004-historical-var-conventions.md
-│   │   └── ADR-005-historical-expected-shortfall-conventions.md
+│   │   ├── ADR-005-historical-expected-shortfall-conventions.md
+│   │   ├── ADR-006-initial-desktop-composition.md
+│   │   └── ADR-007-versioned-project-json.md
 │   ├── development/
 │   │   └── roadmap.md
 │   ├── models/
 │   │   ├── market-data.md
-│   │   └── portfolio-domain.md
+│   │   ├── portfolio-domain.md
+│   │   └── project-file.md
 │   ├── tutorials/             # fluxos executáveis quando existirem
 │   ├── glossary.md
 │   ├── product-vision.md
@@ -343,6 +365,8 @@ zeus-risk-engine/
 ├── src/
 │   └── zeus_risk/
 │       ├── application/       # casos de uso e ports
+│       │   ├── portfolio_risk.py
+│       │   └── project_workflow.py
 │       ├── app/               # integração PySide6
 │       │   ├── controllers/
 │       │   ├── views/
@@ -363,11 +387,13 @@ zeus-risk-engine/
 │       │   └── stress/
 │       ├── domain/
 │       │   ├── analytics.py
+│       │   ├── project.py
 │       │   └── risk.py
 │       ├── exceptions/
 │       │   ├── analytics.py
 │       │   ├── market_data.py
 │       │   ├── portfolio.py
+│       │   ├── project.py
 │       │   └── risk.py
 │       ├── exporters/
 │       ├── importers/
@@ -381,6 +407,8 @@ zeus-risk-engine/
 │       │   ├── cache.py
 │       │   ├── csv_provider.py
 │       │   └── provider.py
+│       ├── projects/
+│       │   └── json_store.py
 │       └── repositories/
 ├── tests/
 │   ├── fixtures/
@@ -399,11 +427,11 @@ zeus-risk-engine/
 
 ### Política de criação incremental
 
-Até a Fase 8 foram criados a fundação executável, os domínios de carteira, mercado,
-analytics e risco histórico, os adapters CSV/XLSX, o pipeline local de preços e o
-primeiro motor com VaR e Expected Shortfall. Cada subpacote, adapter, pasta de teste ou
-asset futuro só será criado com seu primeiro conteúdo real. Isso evita estrutura
-ornamental e torna cada mudança explicável.
+Até a Fase 10 foram criados a fundação executável, os domínios de carteira, mercado,
+analytics e risco histórico, os adapters CSV/XLSX, o pipeline local de preços, o motor
+VaR/ES, o primeiro fluxo PySide6 e projetos JSON restauráveis. Cada subpacote, adapter, pasta de teste ou asset
+futuro só será criado com seu primeiro conteúdo real. Isso evita estrutura ornamental
+e torna cada mudança explicável.
 
 ## Decisões ainda necessárias
 
@@ -437,3 +465,5 @@ ornamental e torna cada mudança explicável.
 - [ADR-001 — Separação entre interface e core](../decisions/ADR-001-separation-of-ui-and-core.md)
 - [ADR-002 — Uso de PySide6](../decisions/ADR-002-use-of-pyside6.md)
 - [ADR-003 — Decimal e pesos de carteira](../decisions/ADR-003-decimal-and-portfolio-weights.md)
+- [ADR-006 — Composição desktop inicial](../decisions/ADR-006-initial-desktop-composition.md)
+- [ADR-007 — Projeto JSON versionado](../decisions/ADR-007-versioned-project-json.md)

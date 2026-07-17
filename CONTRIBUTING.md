@@ -20,6 +20,10 @@ Read the following documents first:
 - [ADR-001: separation of UI and core](docs/decisions/ADR-001-separation-of-ui-and-core.md)
 - [ADR-004: historical VaR conventions](docs/decisions/ADR-004-historical-var-conventions.md)
 - [ADR-005: Expected Shortfall conventions](docs/decisions/ADR-005-historical-expected-shortfall-conventions.md)
+- [ADR-006: initial desktop composition](docs/decisions/ADR-006-initial-desktop-composition.md)
+- [ADR-007: versioned project JSON](docs/decisions/ADR-007-versioned-project-json.md)
+- [First desktop workflow tutorial](docs/tutorials/first-desktop-workflow.md)
+- [Desktop-project file format](docs/models/project-file.md)
 
 Do not implement a later phase merely because it is listed in the roadmap. Each
 change should have a bounded objective, acceptance criteria, tests, documentation,
@@ -64,6 +68,10 @@ python -m pytest --cov=zeus_risk --cov-report=term-missing
 python -m build
 ```
 
+GUI tests set `QT_QPA_PLATFORM=offscreen` before importing Qt and therefore run without
+a display server. To launch the real application after an editable install, use
+`zeus-risk-gui` or `python -m zeus_risk.app`.
+
 Ruff is both the linter and formatter. Black is intentionally not configured to
 avoid overlapping formatters. Mypy runs in strict mode for the package and tests.
 
@@ -78,6 +86,8 @@ avoid overlapping formatters. Mypy runs in strict mode for the package and tests
 - Represent expected validation problems as structured values with stable codes.
 - Avoid global dependencies, silent exception handling, and premature abstractions.
 - Add a dependency only when a current use case needs it and document why.
+- Treat persisted schemas as public contracts: reject ambiguity, add round-trip tests,
+  and require explicit migrations for incompatible changes.
 
 ## Quantitative changes
 
@@ -99,8 +109,13 @@ seeds are required whenever randomness is involved.
 - Unit tests cover invariants, validation, and pure calculations.
 - Integration tests cover package boundaries such as CLI, files, providers, and
   persistence.
+- Project persistence tests must use temporary directories and synthetic references;
+  never commit a real portfolio path or confidential project file.
 - Regression tests preserve reviewed numerical examples.
 - GUI tests cover presentation state and coordination, not every mathematical case.
+- Keep Qt models read-only adapters over immutable domain results where practical.
+- Translate expected boundary failures by their structured code; do not use a broad
+  exception handler to hide programming errors.
 
 Never remove or weaken a test merely to make the pipeline pass. If behavior changes
 intentionally, explain the reason and update its documentation and changelog.

@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "software_version": "0.1.0",
+  "name": "Historical Risk Demo",
+  "portfolio": {
+    "path": "risk_portfolio.csv",
+    "worksheet_name": null
+  },
+  "market_data": {
+    "path": "market_prices.csv"
+  },
+  "risk": {
+    "model": "historical",
+    "return_method": "simple",
+    "confidence_level": "0.5",
+    "horizon_days": 1,
+    "window": 2,
+    "quantile_method": "nearest_rank"
+  }
+}

@@ -59,12 +59,35 @@ and the project intends to follow [Semantic Versioning](https://semver.org/spec/
   means, non-negative ES, and explicit `ES >= VaR` reconciliation.
 - ADR-005, mathematical documentation, manual example, and unit, integration, and
   numerical regression coverage for historical Expected Shortfall.
+- PySide6 6.11 desktop bootstrap, `zeus-risk-gui`, module entry point, main window,
+  restrained application styling, and guided tabbed workflow.
+- PySide-free `PortfolioRiskWorkflow` composing validated portfolio import, local
+  prices, aligned returns, historical VaR, and Expected Shortfall.
+- Read-only Qt table models for positions and validation issues, including source
+  lines, stable codes, tooltips, textual severity, and accessible colors.
+- Portfolio and risk pages with CSV/XLSX worksheet selection, input summaries,
+  explicit parameters, readiness gates, structured failures, and auditable results.
+- Reproducible matching portfolio/price samples, desktop tutorial, ADR-006, and
+  offscreen GUI tests covering bootstrap, models, success, and failure paths.
+- Immutable `DesktopProject`, `ProjectWorkflow`, structured `ProjectFileError`, and a
+  strict JSON schema `1.0` adapter for local project persistence.
+- Atomic UTF-8 project writes, one-megabyte input limit, exact-field validation,
+  duplicate-key detection, decimal-string confidence, and domain revalidation.
+- Relative references within the project directory, absolute external references,
+  explicit missing-source failures, and a portable synthetic `*.zeus.json` example.
+- Desktop open, save, save-as, `Ctrl+S`, unsaved-change marker, atomic restoration, and
+  non-modal project-error presentation.
+- ADR-007, project-format documentation, save/reopen tutorial, unit coverage,
+  round-trip integration, and GUI restoration tests.
 
 ### Notes
 
 - Version `0.1.0` identifies the current pre-alpha codebase; no release tag has been
   published yet.
-- Graphical-interface behavior is not implemented yet.
+- The first graphical workflow is synchronous by design and limited to small local
+  files; background workers and cancellation remain deferred to Phase 14.
+- Project schema `1.0` stores references and configuration only; it does not embed
+  financial data, results, migrations, autosave, or execution history.
 - Historical VaR is relative only; monetary conversion and additional empirical
   quantile methods remain deferred.
 - Historical Expected Shortfall is relative and equally weighted; fractional boundary

@@ -34,6 +34,7 @@ classifiers = [
 dependencies = [
     "defusedxml>=0.7.1,<1",
     "openpyxl>=3.1.5,<4",
+    "PySide6>=6.11.1,<6.12",
 ]
 
 [project.optional-dependencies]
@@ -49,6 +50,7 @@ dev = [
 
 [project.scripts]
 zeus-risk = "zeus_risk.cli:main"
+zeus-risk-gui = "zeus_risk.app.application:main"
 
 [project.urls]
 Homepage = "https://github.com/LucasMath5/Zeus-Risk-Engine"
